@@ -25,8 +25,8 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup -h /home/appuser \
     && mkdir -p /home/appuser/uploads \
     && chown -R appuser:appgroup /home/appuser /app
 
-# Set ownership
-RUN chown -R appuser:appgroup /app
+# Copy built Spring Boot jar from builder stage
+COPY --from=builder --chown=appuser:appgroup /app/target/app.jar app.jar
 
 USER appuser
 
