@@ -21,6 +21,7 @@ public class MediaUploadService {
 
     private final MediaRepository mediaRepository;
     private final WebpConversionService webpConversionService;
+    private final CloudinaryService cloudinaryService;
 
     private Path getUploadDir() throws IOException {
         String userHome = System.getProperty("user.home");
@@ -74,6 +75,16 @@ public class MediaUploadService {
         }
 
         String fileUrl = "/uploads/" + finalFileName;
+        Path savedFilePath = uploadDir.resolve(finalFileName);
+
+        // Nếu Cloudinary được cấu hình -> Đẩy ảnh lên Cloudinary lưu trữ vĩnh viễn (25GB Free)
+        if (cloudinaryService.isConfigured() && Files.exists(savedFilePath)) {
+            String cloudUrl = cloudinaryService.uploadImage(savedFilePath.toFile(), uuid);
+            if (cloudUrl != null && !cloudUrl.isBlank()) {
+                fileUrl = cloudUrl;
+                log.info("Media được lưu trữ thành công trên Cloudinary: {}", fileUrl);
+            }
+        }
 
         Media media = Media.builder()
                 .fileName(originalFilename)

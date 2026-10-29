@@ -29,6 +29,7 @@ public class DocxImportService {
 
     private final MediaRepository mediaRepository;
     private final WebpConversionService webpConversionService;
+    private final CloudinaryService cloudinaryService;
 
     private Path getUploadDir() throws IOException {
         String userHome = System.getProperty("user.home");
@@ -78,6 +79,15 @@ public class DocxImportService {
                     }
 
                     String fileUrl = "/uploads/" + fileName;
+
+                    // Nếu có Cloudinary -> Đẩy ảnh từ Word lên Cloudinary
+                    if (cloudinaryService.isConfigured() && Files.exists(filePath)) {
+                        String cloudUrl = cloudinaryService.uploadImage(filePath.toFile(), "docx_img_" + uuid);
+                        if (cloudUrl != null && !cloudUrl.isBlank()) {
+                            fileUrl = cloudUrl;
+                        }
+                    }
+
                     extractedImages.add(fileUrl);
 
                     // Save image metadata into DB
