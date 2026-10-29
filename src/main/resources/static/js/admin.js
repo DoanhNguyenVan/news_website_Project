@@ -1859,7 +1859,7 @@ async function loadDAMGallery() {
 
   grid.innerHTML = sampleImages.map((url, i) => `
     <div class="group relative rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-video shadow-sm">
-      <img src="${url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+      <img src="${url}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
       <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 p-2">
         <button onclick="copyDAMUrl('${url}')" class="px-2.5 py-1.5 bg-blue-600 text-white font-bold text-[10px] rounded-lg shadow hover:bg-blue-700">
           Sao chép URL

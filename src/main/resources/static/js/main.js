@@ -223,7 +223,7 @@ function renderSpotlight(spotlightPosts = [], fallbackPosts = []) {
   container.innerHTML = `
     <!-- CỘT TRÁI (TIN SPOTLIGHT CHÍNH - 65% / 8 COLS) -->
     <div class="lg:col-span-8 news-card-hover group relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 cursor-pointer h-[380px] sm:h-[440px] lg:h-[460px] flex flex-col justify-end" onclick="location.href='article-detail.html?slug=${hero.slug}'">
-      <img src="${heroImg}" onerror="handleImgError(this)" alt="${hero.title}" class="news-img-zoom absolute inset-0 w-full h-full object-cover opacity-85">
+      <img src="${heroImg}" fetchpriority="high" decoding="async" onerror="handleImgError(this)" alt="${hero.title}" class="news-img-zoom absolute inset-0 w-full h-full object-cover opacity-85">
       <div class="hero-gradient-overlay absolute inset-0"></div>
       
       <div class="relative z-10 p-5 sm:p-7 space-y-2.5">
@@ -264,7 +264,7 @@ function renderSpotlight(spotlightPosts = [], fallbackPosts = []) {
         return `
         <div class="news-card-hover group flex gap-3.5 p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer flex-1" onclick="location.href='article-detail.html?slug=${post.slug}'">
           <div class="w-28 sm:w-32 h-24 sm:h-26 rounded-xl overflow-hidden shrink-0 border border-slate-200/60 dark:border-slate-700">
-            <img src="${sideImg}" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
+            <img src="${sideImg}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
           </div>
           <div class="flex flex-col justify-between flex-1 min-w-0">
             <div>
@@ -317,7 +317,7 @@ function renderLatestFeed(posts, emptyMessage = 'Chưa có bài viết mới.') 
     return `
     <article class="news-card-hover group flex flex-col sm:flex-row gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xs border border-slate-200/80 dark:border-slate-700 hover:shadow-md transition cursor-pointer" onclick="location.href='article-detail.html?slug=${post.slug}'">
       <div class="w-full sm:w-52 md:w-56 h-40 rounded-xl overflow-hidden shrink-0 border border-slate-200/60 dark:border-slate-700">
-        <img src="${imgUrl}" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
+        <img src="${imgUrl}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
       </div>
       <div class="flex flex-col justify-between flex-1 min-w-0">
         <div>
@@ -398,7 +398,7 @@ function renderFeaturedCategories(categories, allPosts) {
           <!-- Bài Lead chính của Chuyên mục -->
           <div class="group cursor-pointer mb-4" onclick="location.href='article-detail.html?slug=${leadPost.slug}'">
             <div class="w-full h-44 rounded-xl overflow-hidden mb-3 border border-slate-200/60 dark:border-slate-700">
-              <img src="${leadImg}" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${leadPost.title}">
+              <img src="${leadImg}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${leadPost.title}">
             </div>
             <h4 class="font-serif text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug line-clamp-2 mb-1.5">
               ${leadPost.title}
@@ -850,7 +850,7 @@ async function loadRelatedPosts(categorySlug, currentPostId) {
       const imgUrl = post.thumbnailUrl || DEFAULT_PLACEHOLDER_IMG;
       return `
         <div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-700 hover:shadow-md transition cursor-pointer" onclick="location.href='article-detail.html?slug=${post.slug}'">
-          <img src="${imgUrl}" onerror="handleImgError(this)" class="w-full h-36 object-cover" alt="${post.title}">
+          <img src="${imgUrl}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="w-full h-36 object-cover" alt="${post.title}">
           <div class="p-4 flex flex-col justify-between flex-1 space-y-2">
             <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">${post.categoryName || 'Tin tức'}</span>
             <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-blue-600 transition leading-snug">${post.title}</h4>
@@ -1256,7 +1256,7 @@ function initLiveSearchAutocomplete() {
           const imgUrl = post.thumbnailUrl || DEFAULT_PLACEHOLDER_IMG;
           return `
             <a href="article-detail.html?slug=${post.slug}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/40 border-b border-slate-100 dark:border-slate-700/60 transition group cursor-pointer">
-              <img src="${imgUrl}" onerror="handleImgError(this)" class="w-12 h-12 object-cover rounded-lg shrink-0 border border-slate-200/70 dark:border-slate-700" alt="">
+              <img src="${imgUrl}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="w-12 h-12 object-cover rounded-lg shrink-0 border border-slate-200/70 dark:border-slate-700" alt="">
               <div class="flex-1 min-w-0">
                 <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
                   ${highlightKeyword(post.title, keyword)}
@@ -1531,7 +1531,7 @@ async function loadPublicBanners() {
               <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-white backdrop-blur-xs">Tài trợ</span>
             </div>
             <a href="${ad.targetUrl}" target="_blank" onclick="ApiService.trackAdClick(${ad.id})" class="block max-h-36 sm:max-h-44 w-full overflow-hidden">
-              <img src="${ad.imageUrl}" alt="${ad.title}" class="w-full h-full object-cover group-hover:opacity-95 transition">
+              <img src="${ad.imageUrl}" loading="lazy" decoding="async" alt="${ad.title}" class="w-full h-full object-cover group-hover:opacity-95 transition">
             </a>
           </div>
         `;
@@ -1555,7 +1555,7 @@ async function loadPublicBanners() {
               <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-white backdrop-blur-xs">Quảng cáo</span>
             </div>
             <a href="${ad.targetUrl}" target="_blank" onclick="ApiService.trackAdClick(${ad.id})" class="block w-full overflow-hidden">
-              <img src="${ad.imageUrl}" alt="${ad.title}" class="w-full h-auto object-cover group-hover:opacity-95 transition">
+              <img src="${ad.imageUrl}" loading="lazy" decoding="async" alt="${ad.title}" class="w-full h-auto object-cover group-hover:opacity-95 transition">
             </a>
           </div>
         `;
@@ -1579,7 +1579,7 @@ async function loadPublicBanners() {
               <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-white backdrop-blur-xs">Tài trợ</span>
             </div>
             <a href="${ad.targetUrl}" target="_blank" onclick="ApiService.trackAdClick(${ad.id})" class="block w-full overflow-hidden">
-              <img src="${ad.imageUrl}" alt="${ad.title}" class="w-full h-auto object-cover group-hover:opacity-95 transition">
+              <img src="${ad.imageUrl}" loading="lazy" decoding="async" alt="${ad.title}" class="w-full h-auto object-cover group-hover:opacity-95 transition">
             </a>
           </div>
         `;
@@ -1818,7 +1818,7 @@ async function renderForYouRecommendations() {
       return `
         <div class="news-card-hover group flex flex-col bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-xs border border-slate-200/80 dark:border-slate-700/80 hover:shadow-md transition">
           <div class="relative overflow-hidden h-44 cursor-pointer" onclick="location.href='article-detail.html?slug=${post.slug}'">
-            <img src="${imgUrl}" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
+            <img src="${imgUrl}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
             <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md shadow-xs">
               ${post.categoryName || 'Gợi ý'}
             </span>
@@ -2009,7 +2009,7 @@ async function loadUserSavedArticles(tab) {
       return `
         <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50/50 transition border border-slate-100 dark:border-slate-700/80 gap-3">
           <div class="flex items-center gap-3 min-w-0 cursor-pointer flex-1" onclick="location.href='article-detail.html?slug=${p.slug}'">
-            <img src="${imgUrl}" onerror="handleImgError(this)" class="w-16 h-12 object-cover rounded-xl shrink-0" alt="${p.title}">
+            <img src="${imgUrl}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="w-16 h-12 object-cover rounded-xl shrink-0" alt="${p.title}">
             <div class="min-w-0 flex-1">
               <span class="text-[10px] font-bold text-blue-600 uppercase">${p.categoryName || 'Tin tức'}</span>
               <h4 class="text-xs font-bold text-slate-800 dark:text-white truncate hover:text-blue-600 transition leading-snug">${p.title}</h4>

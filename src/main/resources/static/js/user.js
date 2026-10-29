@@ -199,7 +199,7 @@ function renderBookmarksGrid(posts) {
       <div id="bookmark-card-${post.id}" class="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
         <div>
           <div class="relative overflow-hidden h-44 cursor-pointer" onclick="location.href='article-detail.html?slug=${post.slug}'">
-            <img src="${thumb}" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600'" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${post.title}">
+            <img src="${thumb}" loading="lazy" decoding="async" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600'" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${post.title}">
             <span class="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md shadow-xs">
               ${catName}
             </span>

@@ -364,6 +364,15 @@ body.dark-mode .live-search-dropdown .bg-slate-50 {
   transform: scale(1.04);
 }
 
+/* NATIVE IMAGE LAZY LOADING SKELETON PLACEHOLDER */
+img[loading="lazy"] {
+  background-color: #f1f5f9;
+  content-visibility: auto;
+}
+.dark img[loading="lazy"] {
+  background-color: #1e293b;
+}
+
 /* SPOTLIGHT HERO GRADIENT OVERLAY */
 .hero-gradient-overlay {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0) 20%, rgba(15, 23, 42, 0.6) 55%, rgba(15, 23, 42, 0.96) 100%);

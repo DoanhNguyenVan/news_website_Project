@@ -106,6 +106,8 @@ public class DocxImportService {
                     Map<String, String> attributes = new HashMap<>();
                     attributes.put("src", fileUrl);
                     attributes.put("class", "my-4 rounded-2xl max-w-full shadow-md inline-block docx-imported-image");
+                    attributes.put("loading", "lazy");
+                    attributes.put("decoding", "async");
                     return attributes;
 
                 } catch (Exception e) {
