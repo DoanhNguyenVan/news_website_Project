@@ -373,16 +373,12 @@ img[loading="lazy"] {
   background-color: #1e293b;
 }
 
-/* TRIỆT ĐỂ ẨN THANH GOOGLE TRANSLATE BANNER & CHỐNG ĐẨY BODY */
+/* ẨN TRIỆT ĐỂ THANH BANNER GOOGLE TRANSLATE BẰNG CẢ DISPLAY VÀ TỌA ĐỘ ÂM */
 .goog-te-banner-frame,
-.goog-te-banner-frame.skiptranslate,
 iframe.goog-te-banner-frame,
-iframe.skiptranslate,
-iframe[class*="VIpgJd"],
-iframe[class*="goog"],
+.goog-te-banner-frame.skiptranslate,
 .VIpgJd-ZVi9od-ORHb-Oxf5Ak,
-.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
-.VIpgJd-ZVi9od-vH1Gmf,
+iframe[id*="container"],
 #goog-gt-tt,
 .goog-tooltip,
 .goog-te-balloon-frame {
@@ -391,13 +387,22 @@ iframe[class*="goog"],
   opacity: 0 !important;
   height: 0 !important;
   width: 0 !important;
-  max-height: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
   pointer-events: none !important;
+  z-index: -99999 !important;
 }
 
 body {
   top: 0px !important;
   position: static !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* SPOTLIGHT HERO GRADIENT OVERLAY */
@@ -566,5 +571,117 @@ body.dark-mode .article-body table th {
   button, a {
     touch-action: manipulation;
   }
+}
+
+/* ========================================================
+ * BOOKMARK CLICK MICRO-INTERACTION ANIMATIONS
+ * ======================================================== */
+@keyframes bookmark-pop {
+  0% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(0.70);
+  }
+  55% {
+    transform: scale(1.35);
+  }
+  75% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bookmark-icon-snap {
+  0% {
+    transform: scale(0.5) rotate(-18deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.35) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes bookmark-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+@keyframes bookmark-unsave-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.82);
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bookmark-animate-save {
+  animation: bookmark-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both, bookmark-pulse-ring 0.55s ease-out both !important;
+}
+
+.bookmark-animate-save svg {
+  animation: bookmark-icon-snap 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.bookmark-animate-unsave {
+  animation: bookmark-unsave-pop 0.32s ease-out both !important;
+}
+
+/* ========================================================
+ * HEADER USER AVATAR EXPANDING PILL ON HOVER
+ * Mặc định: Chỉ hiện avatar tròn gọn gàng.
+ * Di chuột (Hover): Mở rộng mượt mà hiển thị tên người dùng.
+ * ======================================================== */
+.user-avatar-pill {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.user-avatar-pill .user-name-text {
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, margin-left 0.3s ease;
+}
+
+.user-avatar-pill:hover {
+  padding-right: 12px;
+  padding-left: 4px;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12);
+}
+
+.user-avatar-pill:hover .user-name-text {
+  max-width: 140px;
+  opacity: 1;
+  margin-left: 8px;
+}
+
+.bookmark-animate-unsave {
+  animation: bookmark-unsave-pop 0.32s ease-out both !important;
 }
 

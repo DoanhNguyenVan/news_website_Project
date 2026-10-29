@@ -217,7 +217,22 @@ const ApiService = {
       url += `&status=${status}`;
     }
     const json = await this.request(url);
-    return (json && json.data) ? json.data.content : [];
+    if (json && json.data) {
+      const content = json.data.content || [];
+      content.totalElements = json.data.totalElements ?? content.length;
+      content.totalPages = json.data.totalPages ?? 1;
+      content.page = json.data.number ?? page;
+      content.size = json.data.size ?? size;
+      content.first = json.data.first;
+      content.last = json.data.last;
+      return content;
+    }
+    const empty = [];
+    empty.totalElements = 0;
+    empty.totalPages = 1;
+    empty.page = 0;
+    empty.size = size;
+    return empty;
   },
 
   async getPostById(id) {

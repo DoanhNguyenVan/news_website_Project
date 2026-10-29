@@ -115,7 +115,7 @@ public class AdminPostService {
 
     @Transactional(readOnly = true)
     public Page<PostDTO> getAdminPosts(String status, int page, int size, String username) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"));
         User currentUser = username != null ? userRepository.findByUsername(username).orElse(null) : null;
         
         Page<Post> posts;

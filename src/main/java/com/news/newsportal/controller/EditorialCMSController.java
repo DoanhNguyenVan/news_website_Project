@@ -45,7 +45,7 @@ public class EditorialCMSController {
     public ResponseEntity<ApiResponse<Page<PostDTO>>> getAdminPosts(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "20") int size,
             Authentication authentication) {
         String username = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(ApiResponse.success(adminPostService.getAdminPosts(status, page, size, username)));

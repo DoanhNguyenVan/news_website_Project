@@ -48,6 +48,7 @@ public class PublicPollController {
      * Độc giả vote cho một phương án bình chọn
      */
     @PostMapping("/vote/{optionId}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> voteOption(@PathVariable Long optionId) {
         PollOption option = pollOptionRepository.findById(optionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phương án bình chọn này!"));

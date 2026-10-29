@@ -31,6 +31,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByStatusAndIsSpotlightTrueOrderByPublishedAtDesc(PostStatus status, Pageable pageable);
     
     @EntityGraph(attributePaths = {"category", "author"})
+    List<Post> findByStatusAndIsTrendingTrueOrderByPublishedAtDesc(PostStatus status, Pageable pageable);
+    
+    @EntityGraph(attributePaths = {"category", "author"})
     List<Post> findByStatusOrderByPublishedAtDesc(PostStatus status, Pageable pageable);
     
     @EntityGraph(attributePaths = {"category", "author"})

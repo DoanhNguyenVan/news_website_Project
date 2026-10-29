@@ -41,17 +41,35 @@ public class NewsService {
     public Map<String, Object> getHomepageNews() {
         Map<String, Object> response = new HashMap<>();
 
+        // Danh sách Spotlight được Admin chọn ghim (hỗ trợ Slider nhiều bài, tối đa 10 bài)
         List<PostDTO> spotlight = postRepository
-                .findByStatusAndIsSpotlightTrueOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 3))
+                .findByStatusAndIsSpotlightTrueOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
 
         List<PostDTO> latest = postRepository
                 .findByStatusOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
 
-        List<PostDTO> trending = postRepository
-                .findByStatusOrderByViewsCountDesc(PostStatus.PUBLISHED, PageRequest.of(0, 5))
+        // Danh sách Xu hướng (Trending) được Admin tùy chỉnh ghim (isTrending = true)
+        List<PostDTO> trendingPinned = postRepository
+                .findByStatusAndIsTrendingTrueOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 6))
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
+
+        // Bổ sung thêm các bài viết nhiều lượt xem nhất nếu số lượng bài ghim ít hơn 6
+        java.util.LinkedHashMap<Long, PostDTO> trendingMap = new java.util.LinkedHashMap<>();
+        for (PostDTO p : trendingPinned) {
+            trendingMap.put(p.getId(), p);
+        }
+        if (trendingMap.size() < 6) {
+            List<PostDTO> topViews = postRepository
+                    .findByStatusOrderByViewsCountDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
+                    .stream().map(this::convertToDTO).collect(Collectors.toList());
+            for (PostDTO p : topViews) {
+                trendingMap.putIfAbsent(p.getId(), p);
+                if (trendingMap.size() >= 6) break;
+            }
+        }
+        List<PostDTO> trending = new java.util.ArrayList<>(trendingMap.values());
 
         response.put("spotlight", spotlight);
         response.put("latest", latest);

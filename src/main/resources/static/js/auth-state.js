@@ -85,8 +85,8 @@ function renderHeaderAuth() {
           <span>Trang Quản trị (CMS)</span>
         </a>
       ` : ''}
-      <a href="user.html" class="user-pill-badge flex items-center gap-2 px-3 py-1 rounded-full shadow-xs hover:ring-2 hover:ring-blue-400 transition" title="Trang cá nhân & Quản lý bài lưu">
-        <div class="w-6 h-6 bg-blue-600 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0 overflow-hidden">
+      <a href="user.html" class="user-avatar-pill flex items-center rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:ring-2 hover:ring-blue-400/60 transition cursor-pointer" title="Trang cá nhân & Quản lý bài lưu">
+        <div class="w-6 h-6 bg-blue-600 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
           ${user.avatarUrl ? `<img src="${user.avatarUrl}" alt="Avatar" class="w-full h-full object-cover">` : (user.fullName || user.username ? (user.fullName || user.username).charAt(0).toUpperCase() : 'U')}
         </div>
         <span class="user-name-text text-xs font-semibold max-w-[120px] truncate">${user.fullName || user.username}</span>

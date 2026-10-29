@@ -11,6 +11,10 @@ import java.util.Optional;
 @Repository
 public interface PollRepository extends JpaRepository<Poll, Long> {
 
+    @Override
+    @EntityGraph(attributePaths = {"options"})
+    Optional<Poll> findById(Long id);
+
     @EntityGraph(attributePaths = {"options"})
     List<Poll> findByPostIdAndIsActiveTrue(Long postId);
 

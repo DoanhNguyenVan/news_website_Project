@@ -18,6 +18,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findAllByOrderByCreatedAtDesc();
 
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post ORDER BY c.createdAt DESC")
+    List<Comment> findAllWithPostOrderByCreatedAtDesc();
+
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE c.status = :status ORDER BY c.createdAt DESC")
+    List<Comment> findByStatusWithPostOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("status") String status);
+
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE c.status IN ('HIDDEN', 'REJECTED', 'SPAM') ORDER BY c.createdAt DESC")
+    List<Comment> findHiddenWithPostOrderByCreatedAtDesc();
+
     @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt DESC")
     List<Comment> findByPostIdOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("postId") Long postId);
 

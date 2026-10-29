@@ -31,7 +31,7 @@ public class SecurityConfig {
 
     @Bean
     public static PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // BCrypt hashing với strength=12
+        return new BCryptPasswordEncoder(10); // Chuẩn BCrypt strength=10 (Tối ưu tốc độ xử lý nhanh gấp 4 lần trên server deploy thực tế mà vẫn bảo mật an toàn)
     }
 
     @Bean
@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/admin/categories/**", "/api/admin/categories/**").hasAnyRole("SUPER_ADMIN", "EDITOR_IN_CHIEF")
                 .requestMatchers("/api/v1/admin/advertisements/**", "/api/admin/advertisements/**").hasAnyRole("SUPER_ADMIN", "EDITOR_IN_CHIEF")
                 .requestMatchers("/api/v1/admin/polls/**", "/api/admin/polls/**").hasAnyRole("SUPER_ADMIN", "EDITOR_IN_CHIEF", "EDITOR")
-                .requestMatchers("/api/v1/admin/comments/**", "/api/admin/comments/**").hasRole("SUPER_ADMIN")
+                .requestMatchers("/api/v1/admin/comments", "/api/v1/admin/comments/**", "/api/admin/comments", "/api/admin/comments/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                 .requestMatchers("/api/v1/admin/posts/**", "/api/admin/posts/**").hasAnyRole("SUPER_ADMIN", "EDITOR_IN_CHIEF", "EDITOR", "AUTHOR")
                 .requestMatchers("/api/v1/admin/dashboard/**", "/api/admin/dashboard/**", "/api/v1/admin/media/**", "/api/admin/media/**").hasAnyRole("SUPER_ADMIN", "EDITOR_IN_CHIEF", "EDITOR", "AUTHOR")
                 .requestMatchers("/api/v1/admin/**", "/api/admin/**").hasRole("SUPER_ADMIN")

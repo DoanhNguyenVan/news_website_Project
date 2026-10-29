@@ -10,6 +10,78 @@ let autoSaveInterval = null;
 let currentDraftHistory = [];
 const EYE_ICON_SVG = `<svg class="eye-icon-svg inline-block shrink-0" viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-7.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>`;
 
+/* ========================================================
+ * ANIMATE-UI MOTION & PERFORMANCE HELPERS (GPU-COMPOSITED)
+ * ======================================================== */
+function animateCountNumber(elementId, targetValue, duration = 650) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  const target = Number(targetValue) || 0;
+  
+  // Rule A1: Tôn trọng prefers-reduced-motion của hệ điều hành
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduced || target === 0) {
+    el.innerText = target.toLocaleString('vi-VN');
+    return;
+  }
+  
+  const currentStr = el.innerText.replace(/[^\d]/g, '');
+  const start = Number(currentStr) || 0;
+  if (start === target) return;
+  
+  // Micro-bump spring animation
+  el.classList.remove('count-bump');
+  void el.offsetWidth;
+  el.classList.add('count-bump');
+  
+  let startTime = null;
+  function step(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+    const current = Math.floor(start + (target - start) * easeProgress);
+    el.innerText = current.toLocaleString('vi-VN');
+    
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    } else {
+      el.innerText = target.toLocaleString('vi-VN');
+      setTimeout(() => el.classList.remove('count-bump'), 320);
+    }
+  }
+  window.requestAnimationFrame(step);
+}
+
+function renderTableSkeleton(containerId, cols = 7, rows = 5) {
+  const table = document.getElementById(containerId);
+  if (!table) return;
+  let html = '';
+  for (let r = 0; r < rows; r++) {
+    html += `
+      <tr class="border-b border-slate-100">
+        <td class="p-3.5"><div class="skeleton-box h-4 w-44 rounded"></div></td>
+        <td class="p-3.5"><div class="skeleton-box h-4 w-24 rounded"></div></td>
+        <td class="p-3.5"><div class="skeleton-box h-5 w-20 rounded-full"></div></td>
+        <td class="p-3.5"><div class="skeleton-box h-4 w-16 rounded"></div></td>
+        <td class="p-3.5"><div class="skeleton-box h-4 w-28 rounded"></div></td>
+        <td class="p-3.5 text-center"><div class="skeleton-box h-4 w-12 mx-auto rounded"></div></td>
+        <td class="p-3.5 text-right"><div class="skeleton-box h-6 w-20 ml-auto rounded-lg"></div></td>
+      </tr>
+    `;
+  }
+  table.innerHTML = html;
+}
+
+// Rule A4: Tự động đóng băng animation khi tab trình duyệt bị ẩn
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    document.body.classList.add('tab-inactive-pause');
+  } else {
+    document.body.classList.remove('tab-inactive-pause');
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   initAdminDashboard();
   setupKeyboardShortcuts();
@@ -274,9 +346,14 @@ function switchTab(tabName) {
     if (el) el.classList.add('hidden');
   });
 
-  // Hiện Section tương ứng
+  // Hiện Section tương ứng với hiệu ứng tab-fade-enter (spring.dialog)
   const targetSection = document.getElementById(`section-${tabName}`);
-  if (targetSection) targetSection.classList.remove('hidden');
+  if (targetSection) {
+    targetSection.classList.remove('hidden');
+    targetSection.classList.remove('tab-fade-enter');
+    void targetSection.offsetWidth; // Restart CSS animation
+    targetSection.classList.add('tab-fade-enter');
+  }
 
   // Cập nhật Heading
   const headingEl = document.getElementById('page-heading');
@@ -423,16 +500,16 @@ async function loadDashboardData() {
   try {
     const stats = await ApiService.getAdminStats();
     if (stats) {
-      document.getElementById('stat-total-posts').innerText = stats.totalPosts || 0;
-      document.getElementById('stat-pending-posts').innerText = stats.pendingPosts || 0;
-      document.getElementById('stat-published-posts').innerText = stats.publishedPosts || 0;
+      animateCountNumber('stat-total-posts', stats.totalPosts || 0);
+      animateCountNumber('stat-pending-posts', stats.pendingPosts || 0);
+      animateCountNumber('stat-published-posts', stats.publishedPosts || 0);
       const subPub = document.getElementById('stat-published-posts-sub');
       if (subPub) subPub.innerText = (stats.publishedPosts || 0) + ' bài';
-      document.getElementById('stat-total-views').innerText = Number(stats.totalViews || 0).toLocaleString();
-      document.getElementById('stat-total-users').innerText = stats.totalUsers || 0;
-      document.getElementById('stat-total-categories').innerText = stats.totalCategories || 0;
+      animateCountNumber('stat-total-views', stats.totalViews || 0);
+      animateCountNumber('stat-total-users', stats.totalUsers || 0);
+      animateCountNumber('stat-total-categories', stats.totalCategories || 0);
       const pendComm = document.getElementById('stat-pending-comments');
-      if (pendComm) pendComm.innerText = stats.pendingComments || 0;
+      if (pendComm) animateCountNumber('stat-pending-comments', stats.pendingComments || 0);
     }
     const topPosts = await loadDashboardTopArticles();
     if (getUserRole() === 'SUPER_ADMIN') {
@@ -463,7 +540,7 @@ async function loadDashboardTopArticles() {
     }
 
     container.innerHTML = posts.map((p, idx) => `
-      <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition text-xs border border-slate-100">
+      <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition text-xs border border-slate-100 animate-press cursor-pointer">
         <div class="flex items-center gap-2.5 min-w-0">
           <span class="w-5 h-5 rounded-full ${idx === 0 ? 'bg-amber-500 text-white font-black' : 'bg-slate-200 text-slate-700 font-bold'} flex items-center justify-center text-[10px] shrink-0">${idx + 1}</span>
           <span class="font-bold text-slate-800 truncate cursor-pointer hover:text-blue-600" onclick="window.open('article-detail.html?slug=${p.slug}', '_blank')">${p.title}</span>
@@ -1120,8 +1197,14 @@ async function submitPostWithStatus(statusTarget) {
 /* ========================================================
  * 9. QUẢN LÝ BÀI VIẾT (POSTS MANAGEMENT & SCOPING)
  * ======================================================== */
+let currentPostsPage = 0;
+const POSTS_PAGE_SIZE = 20;
+let totalPostsCount = 0;
+let totalPostsPages = 1;
+
 function filterPostsByStatus(status) {
   currentPostStatus = status;
+  currentPostsPage = 0;
   const buttons = document.querySelectorAll('.post-filter-btn');
   buttons.forEach(btn => {
     if (btn.getAttribute('data-status') === status) {
@@ -1130,17 +1213,21 @@ function filterPostsByStatus(status) {
       btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200';
     }
   });
-  loadPostsTable();
+  loadPostsTable(globalSearchKeyword, 0);
 }
 
-async function loadPostsTable(searchFilter = globalSearchKeyword) {
+async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = null) {
+  if (targetPage !== null && targetPage !== undefined) {
+    currentPostsPage = targetPage;
+  }
   const table = document.getElementById('admin-posts-table');
   if (!table) return;
 
-  table.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Đang tải danh sách bài viết...</td></tr>`;
+  renderTableSkeleton('admin-posts-table', 7, 5);
 
   try {
-    let posts = await ApiService.getAdminPosts(currentPostStatus);
+    const postsData = await ApiService.getAdminPosts(currentPostStatus, currentPostsPage, POSTS_PAGE_SIZE);
+    let posts = postsData || [];
     const role = getUserRole();
 
     // Data Scoping: AUTHOR only views their own posts
@@ -1148,19 +1235,24 @@ async function loadPostsTable(searchFilter = globalSearchKeyword) {
       const userStr = localStorage.getItem('user');
       const currentUser = userStr ? JSON.parse(userStr) : null;
       if (currentUser && currentUser.username) {
-        posts = (posts || []).filter(p => p.authorName === currentUser.username || !p.authorName);
+        posts = posts.filter(p => p.authorName === currentUser.username || !p.authorName);
       }
     }
 
     // Keyword filtering from search bar
     if (searchFilter && searchFilter.trim() !== '') {
       const kw = searchFilter.toLowerCase().trim();
-      posts = (posts || []).filter(p => 
+      posts = posts.filter(p => 
         (p.title && p.title.toLowerCase().includes(kw)) ||
         (p.authorName && p.authorName.toLowerCase().includes(kw)) ||
         (p.categoryName && p.categoryName.toLowerCase().includes(kw))
       );
     }
+
+    totalPostsCount = postsData.totalElements ?? posts.length;
+    totalPostsPages = postsData.totalPages ?? Math.max(1, Math.ceil(totalPostsCount / POSTS_PAGE_SIZE));
+
+    renderPostsPagination(currentPostsPage, totalPostsPages, totalPostsCount);
 
     if (!posts || posts.length === 0) {
       table.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Không có bài viết nào phù hợp.</td></tr>`;
@@ -1183,19 +1275,23 @@ async function loadPostsTable(searchFilter = globalSearchKeyword) {
       // Spotlight / Trending columns
       let spotlightCol = '';
       if (role === 'AUTHOR' || role === 'EDITOR') {
-        const spIcon = p.isSpotlight ? 'Bật' : '—';
-        const trIcon = p.isTrending ? 'Bật' : '—';
-        spotlightCol = `<div class="text-xs font-medium text-slate-500">${spIcon} / ${trIcon}</div>`;
+        const spBadge = p.isSpotlight ? '<span class="text-amber-600 font-bold">Spotlight</span>' : '<span class="text-slate-300">—</span>';
+        const trBadge = p.isTrending ? '<span class="text-rose-600 font-bold">Trend</span>' : '<span class="text-slate-300">—</span>';
+        spotlightCol = `<div class="text-xs font-medium flex items-center gap-1.5">${spBadge} / ${trBadge}</div>`;
       } else {
         // SUPER_ADMIN, EDITOR_IN_CHIEF
-        const spotlightIcon = p.isSpotlight ? 'Bật' : 'Tắt';
-        const spotlightClass = p.isSpotlight ? 'text-amber-500 font-bold' : 'text-slate-300';
-        const trendingIcon = p.isTrending ? 'Bật' : 'Tắt';
-        const trendingClass = p.isTrending ? 'text-rose-500 font-bold' : 'text-slate-300';
+        const spBtn = p.isSpotlight
+          ? `<button onclick="handleToggleSpotlight(${p.id})" title="Đang BẬT Spotlight (Hiển thị trong Slider lớn). Bấm để Tắt" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition animate-press cursor-pointer">★ Spotlight</button>`
+          : `<button onclick="handleToggleSpotlight(${p.id})" title="Đang TẮT Spotlight. Bấm để Bật và đưa vào Slider lớn" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition animate-press cursor-pointer">☆ Tắt</button>`;
+
+        const trBtn = p.isTrending
+          ? `<button onclick="handleToggleTrending(${p.id})" title="Đang BẬT Trend (Hiển thị ở 2 ô nhỏ bên phải). Bấm để Tắt" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-xs transition animate-press cursor-pointer">🔥 Trend</button>`
+          : `<button onclick="handleToggleTrending(${p.id})" title="Đang TẮT Trend. Bấm để Bật và đưa vào 2 ô nhỏ bên phải" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition animate-press cursor-pointer">Tắt</button>`;
+
         spotlightCol = `
-          <div class="flex items-center gap-2">
-            <button onclick="handleToggleSpotlight(${p.id})" title="Ghim Spotlight Trang chủ" class="p-1 rounded hover:bg-slate-200 ${spotlightClass}">${spotlightIcon}</button>
-            <button onclick="handleToggleTrending(${p.id})" title="Ghim Xu hướng Trending" class="p-1 rounded hover:bg-slate-200 ${trendingClass}">${trendingIcon}</button>
+          <div class="flex items-center gap-1.5">
+            ${spBtn}
+            ${trBtn}
           </div>
         `;
       }
@@ -1205,19 +1301,19 @@ async function loadPostsTable(searchFilter = globalSearchKeyword) {
       if (role === 'SUPER_ADMIN' || role === 'EDITOR_IN_CHIEF') {
         actionsHtml = `
           ${p.status !== 'PUBLISHED' ? `
-            <button onclick="handleApprovePost(${p.id})" title="Duyệt & Xuất bản" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded border border-emerald-200">
+            <button onclick="handleApprovePost(${p.id}, this)" title="Duyệt & Xuất bản" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded border border-emerald-200 animate-press cursor-pointer">
               Duyệt
             </button>
           ` : ''}
           ${p.status === 'PENDING_APPROVAL' ? `
-            <button onclick="openRejectModal(${p.id})" title="Từ chối với lý do" class="px-2 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs rounded border border-rose-200">
+            <button onclick="openRejectModal(${p.id})" title="Từ chối với lý do" class="px-2 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs rounded border border-rose-200 animate-press cursor-pointer">
               Trả bài
             </button>
           ` : ''}
-          <button onclick="handleEditPost(${p.id})" title="Chỉnh sửa bài viết" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200">
+          <button onclick="handleEditPost(${p.id})" title="Chỉnh sửa bài viết" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 animate-press cursor-pointer">
             Sửa
           </button>
-          <button onclick="handleDeletePost(${p.id})" title="Xóa bài viết" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200">
+          <button onclick="handleDeletePost(${p.id}, this)" title="Xóa bài viết" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
             Xóa
           </button>
         `;
@@ -1232,10 +1328,10 @@ async function loadPostsTable(searchFilter = globalSearchKeyword) {
         } else {
           // DRAFT or REJECTED
           actionsHtml = `
-            <button onclick="handleEditPost(${p.id})" title="Chỉnh sửa bài viết" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200">
+            <button onclick="handleEditPost(${p.id})" title="Chỉnh sửa bài viết" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 animate-press cursor-pointer">
               Sửa
             </button>
-            <button onclick="handleDeletePost(${p.id})" title="Xóa bài viết" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200">
+            <button onclick="handleDeletePost(${p.id}, this)" title="Xóa bài viết" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
               Xóa
             </button>
           `;
@@ -1281,6 +1377,125 @@ async function loadPostsTable(searchFilter = globalSearchKeyword) {
     }).join('');
   } catch (err) {
     table.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Lỗi nạp bài viết!</td></tr>`;
+  }
+}
+
+function renderPostsPagination(currentPage, totalPages, totalCount) {
+  const infoEl = document.getElementById('posts-pagination-info');
+  const controlsEl = document.getElementById('posts-pagination-controls');
+  if (!controlsEl) return;
+
+  if (totalCount === 0) {
+    if (infoEl) infoEl.innerHTML = `Không có bài viết nào trong danh sách.`;
+    controlsEl.innerHTML = '';
+    return;
+  }
+
+  const start = currentPage * POSTS_PAGE_SIZE + 1;
+  const end = Math.min((currentPage + 1) * POSTS_PAGE_SIZE, totalCount);
+
+  if (infoEl) {
+    infoEl.innerHTML = `Hiển thị <span class="font-bold text-slate-800">${start}</span> - <span class="font-bold text-slate-800">${end}</span> trên tổng số <span class="font-bold text-blue-600">${totalCount}</span> bài viết`;
+  }
+
+  if (totalPages <= 1) {
+    controlsEl.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+
+  // Nút Trang trước (<)
+  const isFirst = currentPage === 0;
+  html += `
+    <button 
+      type="button" 
+      onclick="goToPostsPage(${currentPage - 1})" 
+      ${isFirst ? 'disabled' : ''} 
+      title="Trang trước" 
+      class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition ${isFirst ? 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 cursor-pointer animate-press'}">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      <span class="hidden sm:inline">Trước</span>
+    </button>
+  `;
+
+  // Danh sách các trang (1, 2, 3...)
+  const pageRange = getPaginationPageList(currentPage, totalPages);
+  for (const p of pageRange) {
+    if (p === '...') {
+      html += `<span class="px-2 py-1 text-slate-400 font-bold">...</span>`;
+    } else {
+      const pageIndex = p - 1;
+      const isActive = pageIndex === currentPage;
+      if (isActive) {
+        html += `
+          <button type="button" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs shadow-xs flex items-center justify-center">
+            ${p}
+          </button>
+        `;
+      } else {
+        html += `
+          <button type="button" onclick="goToPostsPage(${pageIndex})" class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 flex items-center justify-center transition animate-press cursor-pointer">
+            ${p}
+          </button>
+        `;
+      }
+    }
+  }
+
+  // Nút Trang sau (>)
+  const isLast = currentPage >= totalPages - 1;
+  html += `
+    <button 
+      type="button" 
+      onclick="goToPostsPage(${currentPage + 1})" 
+      ${isLast ? 'disabled' : ''} 
+      title="Trang sau" 
+      class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition ${isLast ? 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed' : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200 cursor-pointer animate-press'}">
+      <span class="hidden sm:inline">Sau</span>
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  `;
+
+  controlsEl.innerHTML = html;
+}
+
+function getPaginationPageList(current, total) {
+  const pages = [];
+  const currentNum = current + 1; // 1-based
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+    return pages;
+  }
+
+  pages.push(1);
+  if (currentNum > 3) {
+    pages.push('...');
+  }
+
+  const start = Math.max(2, currentNum - 1);
+  const end = Math.min(total - 1, currentNum + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (currentNum < total - 2) {
+    pages.push('...');
+  }
+  pages.push(total);
+
+  return pages;
+}
+
+function goToPostsPage(pageIdx) {
+  if (pageIdx < 0 || pageIdx >= totalPostsPages) return;
+  loadPostsTable(globalSearchKeyword, pageIdx);
+  const section = document.getElementById('section-posts');
+  if (section) {
+    const heading = section.querySelector('table');
+    if (heading) heading.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
@@ -1484,31 +1699,50 @@ async function handleSavePost(e) {
   }
 }
 
-async function handleDeletePost(id) {
+async function handleDeletePost(id, btnEl = null) {
   if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn bài viết #${id}?`)) return;
   try {
+    const row = btnEl ? btnEl.closest('tr') : null;
+    if (row) {
+      row.classList.add('row-exit-animate');
+      await new Promise(r => setTimeout(r, 220));
+    }
     await ApiService.deletePost(id);
-    alert(`Đã xóa bài viết #${id}!`);
+    if (window.Toast) Toast.success(`Đã xóa bài viết #${id}!`);
+    else alert(`Đã xóa bài viết #${id}!`);
     loadPostsTable();
     loadDashboardData();
   } catch (err) {
-    alert("Lỗi khi xóa bài viết!");
+    if (window.Toast) Toast.error("Lỗi khi xóa bài viết!");
+    else alert("Lỗi khi xóa bài viết!");
   }
 }
 
-async function handleApprovePost(id) {
+async function handleApprovePost(id, btnEl = null) {
   const role = getUserRole();
-  if (role !== 'SUPER_ADMIN') {
-    alert("Chỉ Quản trị viên (Admin) mới có quyền duyệt và xuất bản bài viết!");
+  if (role !== 'SUPER_ADMIN' && role !== 'EDITOR_IN_CHIEF') {
+    if (window.Toast) Toast.error("Chỉ Ban biên tập mới có quyền duyệt và xuất bản bài viết!");
+    else alert("Chỉ Ban biên tập mới có quyền duyệt và xuất bản bài viết!");
     return;
   }
   try {
+    if (btnEl) {
+      btnEl.innerHTML = `<span class="inline-block animate-spin mr-1">↻</span> Duyệt...`;
+      btnEl.disabled = true;
+    }
     await ApiService.updatePostStatus(id, 'PUBLISHED');
-    alert(`Đã duyệt và xuất bản bài viết #${id}!`);
+    if (btnEl) {
+      btnEl.innerHTML = `<span class="status-check-pop">✓</span> Đã xuất bản`;
+      btnEl.className = 'px-2 py-1 bg-emerald-600 text-white font-bold text-xs rounded';
+      await new Promise(r => setTimeout(r, 450));
+    }
+    if (window.Toast) Toast.success(`Đã duyệt và xuất bản bài viết #${id}!`);
+    else alert(`Đã duyệt và xuất bản bài viết #${id}!`);
     loadPostsTable();
     loadDashboardData();
   } catch (err) {
-    alert("Lỗi khi duyệt bài viết!");
+    if (window.Toast) Toast.error("Lỗi khi duyệt bài viết!");
+    else alert("Lỗi khi duyệt bài viết!");
   }
 }
 
@@ -1557,7 +1791,7 @@ async function loadCategoriesTable() {
   const table = document.getElementById('admin-categories-table');
   if (!table) return;
 
-  table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">Đang tải danh mục...</td></tr>`;
+  renderTableSkeleton('admin-categories-table', 5, 4);
 
   try {
     const categories = await ApiService.getCategories();
@@ -1575,10 +1809,10 @@ async function loadCategoriesTable() {
         <td class="p-3.5 text-xs text-blue-600 font-mono">${c.slug}</td>
         <td class="p-3.5 text-xs text-slate-500 max-w-xs truncate">${c.description || '-'}</td>
         <td class="p-3.5 text-right whitespace-nowrap">
-          <button onclick="handleEditCategory(${c.id}, '${escapeHtml(c.name)}', '${escapeHtml(c.slug)}', '${escapeHtml(c.description || '')}')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 mr-1">
+          <button onclick="handleEditCategory(${c.id}, '${escapeHtml(c.name)}', '${escapeHtml(c.slug)}', '${escapeHtml(c.description || '')}')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 mr-1 animate-press cursor-pointer">
             Sửa
           </button>
-          <button onclick="handleDeleteCategory(${c.id}, '${escapeHtml(c.name)}')" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200">
+          <button onclick="handleDeleteCategory(${c.id}, '${escapeHtml(c.name)}', this)" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
             Xóa
           </button>
         </td>
@@ -1630,16 +1864,23 @@ async function handleSaveCategory(e) {
   }
 }
 
-async function handleDeleteCategory(id, name) {
+async function handleDeleteCategory(id, name, btnEl = null) {
   if (!confirm(`Bạn có chắc muốn xóa chuyên mục "${name}"?`)) return;
   try {
+    const row = btnEl ? btnEl.closest('tr') : null;
+    if (row) {
+      row.classList.add('row-exit-animate');
+      await new Promise(r => setTimeout(r, 220));
+    }
     await ApiService.deleteCategory(id);
-    alert(`Đã xóa chuyên mục "${name}"!`);
+    if (window.Toast) Toast.success(`Đã xóa chuyên mục "${name}"!`);
+    else alert(`Đã xóa chuyên mục "${name}"!`);
     loadCategoriesTable();
     loadCategoriesDropdown();
     loadDashboardData();
   } catch (err) {
-    alert("Lỗi khi xóa chuyên mục!");
+    if (window.Toast) Toast.error("Lỗi khi xóa chuyên mục!");
+    else alert("Lỗi khi xóa chuyên mục!");
   }
 }
 
@@ -1658,7 +1899,7 @@ async function filterUsersTable() {
 
   if (!table) return;
 
-  table.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Đang nạp danh sách người dùng...</td></tr>`;
+  renderTableSkeleton('admin-users-table', 6, 4);
 
   try {
     let users = await ApiService.getUsers();
@@ -1915,7 +2156,7 @@ async function loadCommentsTable() {
     return;
   }
 
-  table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">Đang nạp bình luận...</td></tr>`;
+  renderTableSkeleton('admin-comments-table', 5, 4);
 
   try {
     const comments = await ApiService.getComments(currentCommentStatus);
@@ -1927,78 +2168,88 @@ async function loadCommentsTable() {
 
     table.innerHTML = comments.map(c => {
       const isHidden = (c.status === 'HIDDEN' || c.status === 'REJECTED' || c.status === 'SPAM');
-      let statusBadge = isHidden
-        ? `<span class="px-2.5 py-1 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-full">Đã ẩn</span>`
-        : `<span class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 rounded-full">Đang hiển thị</span>`;
+      const statusBadge = isHidden
+        ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Đã ẩn
+           </span>`
+        : `<span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Đang hiển thị
+           </span>`;
+
+      const postTitleText = c.postTitle || (c.postId ? `Bài viết #${c.postId}` : 'Bài viết gốc');
+      const articleLink = c.postSlug 
+        ? `article-detail.html?slug=${c.postSlug}` 
+        : (c.postId ? `article-detail.html?id=${c.postId}` : '#');
 
       return `
-        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+        <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition">
           <td class="p-3.5 whitespace-nowrap">
             <div class="font-bold text-slate-900">${c.userName || 'Độc giả'}</div>
             <div class="text-[11px] text-slate-400 font-mono">${c.email || ''}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">${formatDate(c.createdAt)}</div>
           </td>
           <td class="p-3.5 max-w-md">
-            <div class="text-xs text-slate-800 leading-relaxed font-medium bg-slate-50 p-2.5 rounded-xl border border-slate-100 ${isHidden ? 'opacity-60 italic' : ''}">
-              ${c.content}
+            <div class="text-xs text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded-xl border border-slate-200/70 shadow-2xs ${isHidden ? 'opacity-50 line-through bg-slate-100/70' : ''}">
+              ${c.content || ''}
             </div>
           </td>
-          <td class="p-3.5 text-xs text-blue-600 font-semibold max-w-xs truncate">
-            ${c.postTitle || `Bài viết #${c.postId || ''}`}
+          <td class="p-3.5 max-w-xs">
+            <a href="${articleLink}" target="_blank" class="text-xs text-blue-600 font-semibold hover:underline line-clamp-2 leading-snug" title="${postTitleText}">
+              ${postTitleText}
+            </a>
+            <span class="text-[10px] text-slate-400 block mt-0.5 font-mono">ID: #${c.postId || '-'}</span>
           </td>
           <td class="p-3.5 whitespace-nowrap">${statusBadge}</td>
           <td class="p-3.5 text-right whitespace-nowrap">
-            <div class="flex items-center justify-end gap-1.5">
+            <div class="flex items-center justify-end">
               ${isHidden ? `
-                <button onclick="handleToggleHideComment(${c.id}, 'APPROVED')" title="Hiển thị lại bình luận trên bài viết" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded-lg border border-emerald-200 flex items-center gap-1">
-                  Hiện
+                <button onclick="handleToggleHideComment(${c.id}, 'APPROVED')" title="Hiển thị lại bình luận này trên bài báo" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded-xl border border-emerald-200 flex items-center gap-1.5 transition transform active:scale-95 shadow-2xs cursor-pointer">
+                  <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span>Bỏ ẩn (Hiện)</span>
                 </button>
               ` : `
-                <button onclick="handleToggleHideComment(${c.id}, 'HIDDEN')" title="Ẩn bình luận khỏi bài viết" class="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold text-xs rounded-lg border border-amber-200 flex items-center gap-1">
-                  Ẩn
+                <button onclick="handleToggleHideComment(${c.id}, 'HIDDEN')" title="Ẩn bình luận này khỏi bài báo công khai" class="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold text-xs rounded-xl border border-amber-200 flex items-center gap-1.5 transition transform active:scale-95 shadow-2xs cursor-pointer">
+                  <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                  <span>Ẩn bình luận</span>
                 </button>
               `}
-              <button onclick="handleDeleteComment(${c.id})" title="Xóa vĩnh viễn bình luận" class="px-2.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs rounded-lg border border-rose-200 flex items-center gap-1">
-                Xóa
-              </button>
             </div>
           </td>
         </tr>
       `;
     }).join('');
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Lỗi nạp bình luận!</td></tr>`;
+    table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Lỗi nạp danh sách bình luận!</td></tr>`;
   }
 }
 
 async function handleToggleHideComment(id, newStatus) {
   const role = getUserRole();
   if (role !== 'SUPER_ADMIN') {
-    alert("Chỉ quản trị viên (Admin) mới có quyền ẩn/hiện bình luận!");
+    if (window.Toast) Toast.error("Chỉ quản trị viên (Admin) mới có quyền ẩn/hiện bình luận!");
+    else alert("Chỉ quản trị viên (Admin) mới có quyền ẩn/hiện bình luận!");
     return;
   }
   try {
-    await ApiService.moderateComment(id, newStatus);
+    const res = await ApiService.moderateComment(id, newStatus);
+    const msg = (newStatus === 'HIDDEN') 
+      ? `Đã ẩn bình luận #${id} khỏi bài viết!` 
+      : `Đã bỏ ẩn và hiển thị lại bình luận #${id}!`;
+    
+    if (window.Toast) Toast.success(msg);
     loadCommentsTable();
     loadDashboardData();
   } catch (err) {
-    alert("Lỗi khi cập nhật trạng thái bình luận!");
+    if (window.Toast) Toast.error("Lỗi khi cập nhật trạng thái bình luận!");
+    else alert("Lỗi khi cập nhật trạng thái bình luận!");
   }
 }
 
-async function handleDeleteComment(id) {
-  const role = getUserRole();
-  if (role !== 'SUPER_ADMIN') {
-    alert("Chỉ quản trị viên (Admin) mới có quyền xóa bình luận!");
-    return;
-  }
-  if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn bình luận #${id}?`)) return;
-  try {
-    await ApiService.deleteComment(id);
-    alert(`Đã xóa bình luận #${id} thành công!`);
-    loadCommentsTable();
-    loadDashboardData();
-  } catch (err) {
-    alert("Lỗi khi xóa bình luận!");
+async function handleDeleteComment(id, btnEl = null) {
+  if (window.Toast) {
+    Toast.warning("Hệ thống bảo toàn dữ liệu: Quản trị viên chỉ có quyền Ẩn bình luận, không có quyền xóa vĩnh viễn.");
+  } else {
+    alert("Hệ thống bảo toàn dữ liệu: Quản trị viên chỉ có quyền Ẩn bình luận, không có quyền xóa vĩnh viễn.");
   }
 }
 

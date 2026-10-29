@@ -93,7 +93,9 @@ function createAuthModalDOM() {
             <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase mb-1">Mật khẩu</label>
             <input type="password" id="login-password" required class="w-full p-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:border-blue-600">
           </div>
-          <button type="submit" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow">ĐĂNG NHẬP NGAY</button>
+          <button type="submit" id="btn-login-submit" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow flex items-center justify-center gap-2 cursor-pointer">
+            <span>ĐĂNG NHẬP NGAY</span>
+          </button>
         </form>
 
         <!-- FORM 2: ĐĂNG KÝ XÁC THỰC MÃ OTP GMAIL 2 BƯỚC -->
@@ -247,13 +249,27 @@ async function handleRegisterSubmit(e) {
 
 /**
  * XỬ LÝ SUBMIT ĐĂNG NHẬP (Gửi POST /api/v1/auth/login)
+ * Tối ưu tốc độ tức thì: Hiển thị phản hồi spinner ngay <16ms, đóng modal ngay và cập nhật tại chỗ không cần reload
  */
 async function handleLoginSubmit(e) {
   e.preventDefault();
   const username = document.getElementById('login-username').value;
   const password = document.getElementById('login-password').value;
   const errorBox = document.getElementById('login-error-msg');
+  const submitBtn = document.getElementById('btn-login-submit') || e.target.querySelector('button[type="submit"]');
   errorBox.classList.add('hidden');
+
+  // Phản hồi trực quan tức thì <16ms
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg class="animate-spin h-4 w-4 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span>Đang xác thực...</span>
+    `;
+  }
 
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
@@ -265,6 +281,10 @@ async function handleLoginSubmit(e) {
     const json = await res.json();
 
     if (json.success && json.data) {
+      // 1. Đóng modal ngay lập tức để không gây gián đoạn mắt người dùng
+      closeAuthModal();
+
+      // 2. Lưu token & thông tin người dùng vào LocalStorage
       localStorage.setItem('accessToken', json.data.accessToken);
       localStorage.setItem('refreshToken', json.data.refreshToken);
       localStorage.setItem('user', JSON.stringify({
@@ -276,21 +296,40 @@ async function handleLoginSubmit(e) {
         role: json.data.role
       }));
 
-      closeAuthModal();
-      
-      const role = json.data.role.toUpperCase();
+      // 3. Nếu là Admin / Ban biên tập -> Chuyển hướng nhanh tức thì bằng replace
+      const role = (json.data.role || '').toUpperCase();
       if (['SUPER_ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'AUTHOR'].includes(role)) {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.reload();
+        window.location.replace('admin.html');
+        return;
+      }
+
+      // 4. Độc giả thông thường: Cập nhật giao diện tại chỗ (In-Place Reactive), KHÔNG reload toàn trang
+      if (typeof renderHeaderAuth === 'function') {
+        renderHeaderAuth();
+      }
+      if (typeof initUserBookmarkCache === 'function') {
+        initUserBookmarkCache();
+      }
+      if (window.toast && typeof window.toast.success === 'function') {
+        window.toast.success(`Đăng nhập thành công! Chào mừng ${json.data.fullName || json.data.username}.`);
+      } else if (typeof showToastNotification === 'function') {
+        showToastNotification(`Đăng nhập thành công! Chào mừng ${json.data.fullName || json.data.username}.`);
       }
     } else {
       errorBox.innerText = json.message || "Tên đăng nhập hoặc mật khẩu không đúng!";
       errorBox.classList.remove('hidden');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>ĐĂNG NHẬP NGAY</span>';
+      }
     }
   } catch (err) {
     errorBox.innerText = "Lỗi kết nối tới máy chủ. Vui lòng thử lại sau!";
     errorBox.classList.remove('hidden');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>ĐĂNG NHẬP NGAY</span>';
+    }
   }
 }
 
@@ -307,6 +346,9 @@ async function processGoogleCredential(credential) {
     });
     const json = await res.json();
     if (json.success && json.data) {
+      // Đóng modal tức thì
+      closeAuthModal();
+
       localStorage.setItem('accessToken', json.data.accessToken);
       localStorage.setItem('refreshToken', json.data.refreshToken);
       localStorage.setItem('user', JSON.stringify({
@@ -317,12 +359,16 @@ async function processGoogleCredential(credential) {
         avatarUrl: json.data.avatarUrl,
         role: json.data.role
       }));
-      closeAuthModal();
+
       const role = (json.data.role || '').toUpperCase();
       if (['SUPER_ADMIN', 'EDITOR_IN_CHIEF', 'EDITOR', 'AUTHOR'].includes(role)) {
-        window.location.href = 'admin.html';
+        window.location.replace('admin.html');
       } else {
-        window.location.reload();
+        if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
+        if (typeof initUserBookmarkCache === 'function') initUserBookmarkCache();
+        if (window.toast && typeof window.toast.success === 'function') {
+          window.toast.success(`Đăng nhập Google thành công!`);
+        }
       }
     } else {
       alert("Đăng nhập Google không thành công: " + (json.message || "Lỗi xác thực"));
