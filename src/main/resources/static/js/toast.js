@@ -378,3 +378,4 @@
 
   console.log('[NewsPortal] Modern Toast & Alert Notification System initialized.');
 })();
+
