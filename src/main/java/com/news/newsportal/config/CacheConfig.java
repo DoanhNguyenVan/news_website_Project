@@ -24,7 +24,7 @@ public class CacheConfig {
         return cacheManager;
     }
 
-    @Scheduled(fixedRate = 600_000)
+    @Scheduled(fixedRate = 120_000)
     public void evictHomepageCache() {
         var cache = cacheManager.getCache("homepage_news");
         if (cache != null) {

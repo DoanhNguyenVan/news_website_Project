@@ -600,7 +600,12 @@ async function initArticleDetailPage() {
   try {
     loadPublicBanners();
 
-    const post = await ApiService.getPostBySlug(slug);
+    // Khóa chống spam tăng view ảo khi người đọc đổi ngôn ngữ EN/VI hoặc tải lại trang
+    const sessionViewKey = 'newsportal_viewed_' + slug;
+    const isAlreadyViewed = sessionStorage.getItem(sessionViewKey) === 'true';
+
+    const post = await ApiService.getPostBySlug(slug, !isAlreadyViewed);
+    sessionStorage.setItem(sessionViewKey, 'true');
     if (!post) return;
     currentArticlePostId = post.id;
     window.currentPostId = post.id;

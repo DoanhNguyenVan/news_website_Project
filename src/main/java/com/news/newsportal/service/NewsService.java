@@ -72,11 +72,18 @@ public class NewsService {
      */
     @Transactional
     public PostDTO getArticleBySlug(String slug) {
+        return getArticleBySlug(slug, true);
+    }
+
+    @Transactional
+    public PostDTO getArticleBySlug(String slug, boolean incrementView) {
         Post post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài viết không tồn tại với slug: " + slug));
 
-        post.setViewsCount(post.getViewsCount() + 1);
-        postRepository.save(post);
+        if (incrementView) {
+            post.setViewsCount(post.getViewsCount() + 1);
+            postRepository.save(post);
+        }
 
         PostDTO dto = convertToDTO(post);
 

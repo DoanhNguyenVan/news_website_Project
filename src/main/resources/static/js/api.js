@@ -113,8 +113,9 @@ const ApiService = {
     return (json && json.data) ? json.data.content : [];
   },
 
-  async getPostBySlug(slug) {
-    const json = await this.request(`${CONFIG.API_BASE_URL}/news/article/${slug}`);
+  async getPostBySlug(slug, incrementView = true) {
+    const url = `${CONFIG.API_BASE_URL}/news/article/${encodeURIComponent(slug)}${incrementView ? '' : '?incrementView=false'}`;
+    const json = await this.request(url);
     return json ? json.data : null;
   },
 

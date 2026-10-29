@@ -37,8 +37,10 @@ public class PublicNewsController {
     }
 
     @GetMapping("/article/{slug}")
-    public ResponseEntity<ApiResponse<PostDTO>> getArticleBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(ApiResponse.success(newsService.getArticleBySlug(slug)));
+    public ResponseEntity<ApiResponse<PostDTO>> getArticleBySlug(
+            @PathVariable String slug,
+            @RequestParam(required = false, defaultValue = "true") boolean incrementView) {
+        return ResponseEntity.ok(ApiResponse.success(newsService.getArticleBySlug(slug, incrementView)));
     }
 
     @GetMapping("/search")
