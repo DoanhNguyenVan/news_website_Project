@@ -403,14 +403,14 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
   const hasMultipleSlides = sliderPosts.length > 1;
   const navButtonsHtml = hasMultipleSlides ? `
     <!-- Nút Lùi (Prev Slide) -->
-    <button type="button" aria-label="Bài trước" onclick="event.stopPropagation(); heroSlidePrev();" class="absolute left-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white backdrop-blur-md flex items-center justify-center border border-white/20 hover:scale-105 active:scale-95 transition-all shadow-lg opacity-80 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
+    <button type="button" aria-label="Bài trước" onclick="event.stopPropagation(); heroSlidePrev();" class="absolute left-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/30 hover:bg-slate-900/60 text-white/90 backdrop-blur-xs flex items-center justify-center border border-white/10 hover:scale-105 active:scale-95 transition-all shadow-md opacity-40 sm:opacity-0 group-hover:opacity-50 hover:!opacity-90 cursor-pointer">
       <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[2.75]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
     </button>
 
-    <!-- Nút Tiến (Next Slide - Theo mẫu icon) -->
-    <button type="button" aria-label="Bài tiếp theo" onclick="event.stopPropagation(); heroSlideNext();" class="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/60 hover:bg-slate-900/90 text-white backdrop-blur-md flex items-center justify-center border border-white/20 hover:scale-105 active:scale-95 transition-all shadow-lg opacity-80 sm:opacity-0 group-hover:opacity-100 cursor-pointer">
+    <!-- Nút Tiến (Next Slide - Mờ hơn 50% theo yêu cầu) -->
+    <button type="button" aria-label="Bài tiếp theo" onclick="event.stopPropagation(); heroSlideNext();" class="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900/30 hover:bg-slate-900/60 text-white/90 backdrop-blur-xs flex items-center justify-center border border-white/10 hover:scale-105 active:scale-95 transition-all shadow-md opacity-40 sm:opacity-0 group-hover:opacity-50 hover:!opacity-90 cursor-pointer">
       <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[2.75]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
       </svg>

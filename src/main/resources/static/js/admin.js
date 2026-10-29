@@ -83,6 +83,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  initSidebarCollapse();
   initAdminDashboard();
   setupKeyboardShortcuts();
   setupAutoSaveTimer();
@@ -317,6 +318,55 @@ function toggleAdminSidebar(show) {
   }
 }
 window.toggleAdminSidebar = toggleAdminSidebar;
+
+function toggleSidebarCollapse(forceState = null) {
+  const sidebar = document.getElementById('admin-sidebar');
+  const btn = document.getElementById('sidebar-collapse-btn');
+  const icon = document.getElementById('sidebar-collapse-icon');
+  if (!sidebar) return;
+
+  const isCurrentlyCollapsed = sidebar.classList.contains('sidebar-collapsed');
+  const willCollapse = forceState !== null ? forceState : !isCurrentlyCollapsed;
+
+  if (willCollapse) {
+    sidebar.classList.add('sidebar-collapsed');
+    if (btn) {
+      btn.setAttribute('title', 'Mở rộng sidebar');
+      btn.setAttribute('aria-label', 'Mở rộng sidebar');
+    }
+    if (icon) {
+      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />';
+    }
+    localStorage.setItem('admin_sidebar_collapsed', 'true');
+  } else {
+    sidebar.classList.remove('sidebar-collapsed');
+    if (btn) {
+      btn.setAttribute('title', 'Thu hẹp sidebar');
+      btn.setAttribute('aria-label', 'Thu hẹp sidebar');
+    }
+    if (icon) {
+      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />';
+    }
+    localStorage.setItem('admin_sidebar_collapsed', 'false');
+  }
+
+  // Trigger window resize để Chart.js tính toán lại chiều rộng canvas mượt mà
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 300);
+}
+window.toggleSidebarCollapse = toggleSidebarCollapse;
+
+function initSidebarCollapse() {
+  const savedState = localStorage.getItem('admin_sidebar_collapsed');
+  // Mặc định là thu hẹp (collapsed) trừ khi người dùng đã chủ động mở rộng (savedState === 'false')
+  if (savedState === 'false' && window.innerWidth >= 768) {
+    toggleSidebarCollapse(false);
+  } else if (window.innerWidth >= 768) {
+    toggleSidebarCollapse(true);
+  }
+}
+window.initSidebarCollapse = initSidebarCollapse;
 
 function switchTab(tabName) {
   // Tự động đóng sidebar trên mobile khi chuyển tab để người dùng xem ngay nội dung

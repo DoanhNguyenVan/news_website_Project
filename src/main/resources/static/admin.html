@@ -87,134 +87,166 @@
   <!-- ==========================================
        SIDEBAR NAVIGATION (MINIMALIST WHITE SIDEBAR - FIXED FULL HEIGHT)
   =========================================== -->
-  <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white text-slate-600 p-5 flex flex-col justify-between border-r border-slate-200/80 flex-shrink-0 transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 md:static md:w-64 md:h-screen md:overflow-y-auto md:z-40">
-    <div>
-      <!-- Brand Logo Header (Modern SaaS Style) -->
-      <div class="flex items-center justify-between mb-8 px-1 pb-4 border-b border-slate-100">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" opacity="0.9"/>
-            </svg>
+  <aside id="admin-sidebar" class="relative fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white text-slate-600 flex flex-col border-r border-slate-200/80 shrink-0 transition-[width,padding] duration-300 ease-in-out -translate-x-full md:translate-x-0 md:static md:w-20 md:h-screen md:overflow-visible md:z-40 sidebar-collapsed">
+    
+    <!-- Collapse / Expand Toggle Button (Floating on edge, Circular SaaS Style) -->
+    <button id="sidebar-collapse-btn" 
+            onclick="toggleSidebarCollapse()" 
+            type="button"
+            class="hidden md:flex absolute -right-3.5 top-6 z-50 w-7 h-7 bg-white border border-slate-300 hover:border-slate-400 rounded-full shadow-xs hover:shadow-md items-center justify-center text-slate-700 hover:text-blue-600 hover:scale-110 active:scale-95 transition-all cursor-pointer focus:outline-hidden" 
+            title="Mở rộng sidebar"
+            aria-label="Mở rộng sidebar">
+      <svg id="sidebar-collapse-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+
+    <div class="sidebar-inner w-full h-full p-3 md:p-3 flex flex-col justify-between overflow-y-auto overflow-x-hidden">
+      <div>
+        <!-- Brand Logo Header (Modern SaaS Style) -->
+        <div class="sidebar-brand-header flex items-center justify-between mb-8 px-1 pb-4 border-b border-slate-100">
+          <div class="sidebar-brand flex items-center gap-3">
+            <div class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-sm shrink-0" title="NewsPortal SaaS">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" opacity="0.9"/>
+              </svg>
+            </div>
+            <div class="sidebar-brand-text leading-tight whitespace-nowrap overflow-hidden">
+              <span class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
+                NewsPortal
+              </span>
+              <span class="block text-[11px] text-blue-600 font-semibold tracking-wide">Editorial SaaS Suite</span>
+            </div>
           </div>
-          <div class="leading-tight">
-            <span class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
-              NewsPortal
-            </span>
-            <span class="block text-[11px] text-blue-600 font-semibold tracking-wide">Editorial SaaS Suite</span>
-          </div>
-        </div>
-        <!-- Mobile Close Drawer Button -->
-        <button onclick="toggleAdminSidebar(false)" class="md:hidden p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer" aria-label="Đóng menu">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <!-- Nav Menu Items (Clean Gray Outline Icons, Blue Active) -->
-      <nav class="space-y-1.5 text-[13px] font-semibold" id="admin-sidebar-nav">
-        <!-- Dashboard -->
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left nav-active cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-          </svg>
-          <span>Dashboard</span>
-        </button>
-
-        <!-- Bài viết (Posts) -->
-        <button onclick="switchTab('posts')" id="nav-posts" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          <span>Quản lý Bài viết</span>
-        </button>
-
-        <!-- Chuyên mục (Categories) -->
-        <button onclick="switchTab('categories')" id="nav-categories" data-role-required="SUPER_ADMIN,EDITOR_IN_CHIEF" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-          </svg>
-          <span>Quản lý Chuyên mục</span>
-        </button>
-
-        <!-- Người dùng & RBAC -->
-        <button onclick="switchTab('users')" id="nav-users" data-role-required="SUPER_ADMIN" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-          </svg>
-          <span>Người dùng & RBAC</span>
-        </button>
-
-        <!-- Bình luận (Comments) -->
-        <button onclick="switchTab('comments')" id="nav-comments" data-role-required="SUPER_ADMIN" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-          </svg>
-          <span>Quản lý Bình luận</span>
-        </button>
-
-        <!-- Media DAM -->
-        <button onclick="switchTab('media')" id="nav-media" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <span>Thư viện Media DAM</span>
-        </button>
-
-        <!-- Quảng cáo & Banner -->
-        <button onclick="switchTab('advertisements')" id="nav-advertisements" data-role-required="SUPER_ADMIN,EDITOR_IN_CHIEF" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
-          </svg>
-          <span>Banner & Quảng cáo</span>
-        </button>
-
-        <!-- Thăm dò Polls -->
-        <button onclick="switchTab('polls')" id="nav-polls" data-role-required="SUPER_ADMIN,EDITOR_IN_CHIEF,EDITOR" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
-          <span>Thăm dò Ý kiến (Polls)</span>
-        </button>
-
-        <!-- Thin Divider between main and system navigation -->
-        <div class="my-4 pt-2 border-t border-slate-100"></div>
-
-        <!-- Cài đặt & Cache -->
-        <button onclick="switchTab('settings')" id="nav-settings" data-role-required="SUPER_ADMIN" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
-          <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          <span>Cài đặt & Cache</span>
-        </button>
-      </nav>
-    </div>
-
-    <!-- Sidebar Bottom Footer -->
-    <div class="pt-5 border-t border-slate-100 text-xs text-slate-500 space-y-3">
-      <div class="flex items-center justify-between">
-        <span class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold text-[11px]">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Server: Online
-        </span>
-        <div class="relative group" data-role-required="SUPER_ADMIN">
-          <button onclick="toggleCacheDropdown()" title="Xóa Cache ngay" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[10px] font-bold rounded-lg border border-slate-200 flex items-center gap-1 transition">
-            ⚡ Flush ▾
+          <!-- Mobile Close Drawer Button -->
+          <button onclick="toggleAdminSidebar(false)" class="md:hidden p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer" aria-label="Đóng menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
-          <div id="sidebar-cache-menu" class="hidden absolute bottom-full left-0 mb-2 w-48 bg-white text-slate-800 text-xs rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 menu-spring-enter">
-            <button onclick="handleQuickClearCache('home')" class="w-full text-left px-3 py-1.5 hover:bg-slate-50 rounded-lg text-slate-700">🏠 Cache Trang chủ</button>
-            <button onclick="handleQuickClearCache('category')" class="w-full text-left px-3 py-1.5 hover:bg-slate-50 rounded-lg text-slate-700">📂 Cache Chuyên mục</button>
-            <button onclick="handleQuickClearCache('all')" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 rounded-lg text-blue-600 font-bold border-t border-slate-100 mt-1 pt-1">⚡ Xóa Cache Toàn bộ</button>
+        </div>
+
+        <!-- Nav Menu Items (Clean Gray Outline Icons, Blue Active) -->
+        <nav class="space-y-1.5 text-[13px] font-semibold" id="admin-sidebar-nav">
+          <!-- Dashboard -->
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" title="Dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left nav-active cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Dashboard</span>
+          </button>
+
+          <!-- Bài viết (Posts) -->
+          <button onclick="switchTab('posts')" id="nav-posts" title="Quản lý Bài viết" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Quản lý Bài viết</span>
+          </button>
+
+          <!-- Chuyên mục (Categories) -->
+          <button onclick="switchTab('categories')" id="nav-categories" title="Quản lý Chuyên mục" data-role-required="SUPER_ADMIN,EDITOR_IN_CHIEF" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Quản lý Chuyên mục</span>
+          </button>
+
+          <!-- Người dùng & RBAC -->
+          <button onclick="switchTab('users')" id="nav-users" title="Người dùng & RBAC" data-role-required="SUPER_ADMIN" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Người dùng & RBAC</span>
+          </button>
+
+          <!-- Bình luận (Comments) -->
+          <button onclick="switchTab('comments')" id="nav-comments" title="Quản lý Bình luận" data-role-required="SUPER_ADMIN" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Quản lý Bình luận</span>
+          </button>
+
+          <!-- Media DAM -->
+          <button onclick="switchTab('media')" id="nav-media" title="Thư viện Media DAM" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Thư viện Media DAM</span>
+          </button>
+
+          <!-- Banner & Quảng cáo -->
+          <button onclick="switchTab('advertisements')" id="nav-advertisements" title="Banner & Quảng cáo" data-role-required="SUPER_ADMIN,EDITOR_IN_CHIEF" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Banner & Quảng cáo</span>
+          </button>
+
+          <!-- Thăm dò Polls -->
+          <button onclick="switchTab('polls')" id="nav-polls" title="Thăm dò Ý kiến (Polls)" data-role-required="SUPER_ADMIN,EDITOR_IN_CHIEF,EDITOR" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Thăm dò Ý kiến (Polls)</span>
+          </button>
+
+          <!-- Thin Divider between main and system navigation -->
+          <div class="my-4 pt-2 border-t border-slate-100"></div>
+
+          <!-- Cài đặt & Cache -->
+          <button onclick="switchTab('settings')" id="nav-settings" title="Cài đặt & Cache" data-role-required="SUPER_ADMIN" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition text-left cursor-pointer animate-press">
+            <svg class="w-4 h-4 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span class="whitespace-nowrap overflow-hidden">Cài đặt & Cache</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Sidebar Bottom Footer -->
+      <div class="sidebar-footer pt-5 border-t border-slate-100 text-xs text-slate-500 space-y-3">
+        <div class="sidebar-footer-row flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 text-emerald-600 font-semibold text-[11px]" title="Server: Online">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span> 
+            <span class="sidebar-footer-text whitespace-nowrap">Server: Online</span>
+          </span>
+          <div class="relative group sidebar-hide-on-collapsed" data-role-required="SUPER_ADMIN">
+            <button onclick="toggleCacheDropdown()" title="Xóa Cache ngay" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[10px] font-bold rounded-lg border border-slate-200 flex items-center gap-1 transition">
+              ⚡ Flush ▾
+            </button>
+            <div id="sidebar-cache-menu" class="hidden absolute bottom-full left-0 mb-2 w-48 bg-white text-slate-800 text-xs rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 menu-spring-enter">
+              <button onclick="handleQuickClearCache('home')" class="w-full text-left px-3 py-1.5 hover:bg-slate-50 rounded-lg text-slate-700">🏠 Cache Trang chủ</button>
+              <button onclick="handleQuickClearCache('category')" class="w-full text-left px-3 py-1.5 hover:bg-slate-50 rounded-lg text-slate-700">📂 Cache Chuyên mục</button>
+              <button onclick="handleQuickClearCache('all')" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 rounded-lg text-blue-600 font-bold border-t border-slate-100 mt-1 pt-1">⚡ Xóa Cache Toàn bộ</button>
+            </div>
           </div>
         </div>
+        <a href="index.html" target="_blank" class="sidebar-footer-link flex items-center gap-2 text-blue-600 hover:text-blue-700 transition font-semibold text-xs" title="Xem Mạng Báo Public">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+          <span class="sidebar-footer-text whitespace-nowrap">Xem Mạng Báo Public</span>
+        </a>
       </div>
-      <a href="index.html" target="_blank" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition font-semibold text-xs">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-        </svg>
-        <span>Xem Mạng Báo Public</span>
-      </a>
     </div>
   </aside>
+
+  <script>
+    // Mặc định hiển thị thu hẹp (collapsed) trừ khi người dùng đã chủ động mở rộng
+    try {
+      if (localStorage.getItem('admin_sidebar_collapsed') === 'false' && window.innerWidth >= 768) {
+        document.getElementById('admin-sidebar')?.classList.remove('sidebar-collapsed');
+        const icon = document.getElementById('sidebar-collapse-icon');
+        if (icon) icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />';
+        const btn = document.getElementById('sidebar-collapse-btn');
+        if (btn) {
+          btn.setAttribute('title', 'Thu hẹp sidebar');
+          btn.setAttribute('aria-label', 'Thu hẹp sidebar');
+        }
+      }
+    } catch(e) {}
+  </script>
 
   <!-- ==========================================
        MAIN CONTENT CONTAINER

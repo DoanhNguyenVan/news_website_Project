@@ -218,3 +218,79 @@
   animation: rowSlideOut 0.24s cubic-bezier(0.4, 0, 1, 1) forwards;
   pointer-events: none;
 }
+
+/* ========================================================
+   9. COLLAPSIBLE SIDEBAR MOTION & LAYOUT SYSTEM
+   Hỗ trợ thu hẹp / mở rộng mượt mà, mặc định thu hẹp icon-only.
+======================================================== */
+#admin-sidebar {
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+}
+
+@media (min-width: 768px) {
+  /* Trạng thái thu hẹp (Collapsed - Default) */
+  #admin-sidebar.sidebar-collapsed {
+    width: 5rem !important; /* 80px */
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-inner {
+    padding: 1.25rem 0.625rem !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-brand-text,
+  #admin-sidebar.sidebar-collapsed #admin-sidebar-nav button span,
+  #admin-sidebar.sidebar-collapsed .sidebar-footer-text,
+  #admin-sidebar.sidebar-collapsed .sidebar-hide-on-collapsed {
+    display: none !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-brand-header {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-brand {
+    justify-content: center !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed #admin-sidebar-nav button {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed #admin-sidebar-nav button svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    gap: 0.875rem !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-footer-row {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  #admin-sidebar.sidebar-collapsed .sidebar-footer-link {
+    justify-content: center !important;
+  }
+
+  /* Trạng thái mở rộng (Expanded) */
+  #admin-sidebar:not(.sidebar-collapsed) {
+    width: 16rem !important; /* 256px */
+  }
+
+  #admin-sidebar:not(.sidebar-collapsed) .sidebar-inner {
+    padding: 1.25rem !important;
+  }
+}
+
