@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tìm Kiếm Bài Viết — The News Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 text-slate-900 transition-colors duration-200">
+
+  <!-- TOP UTILITY BAR -->
+  <div class="bg-slate-900 text-slate-300 text-xs border-b border-slate-800 py-1.5 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <span id="current-date-display" class="font-medium text-slate-400"></span>
+        <span class="hidden md:inline-block text-slate-600">•</span>
+        <span class="hidden md:inline-block text-slate-400">Ấn bản: Việt Nam</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="theme-toggle-btn" class="hover:text-white transition flex items-center gap-1.5" title="Đổi giao diện Sáng / Tối">
+          <svg class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span class="hidden sm:inline">Chế độ tối</span>
+        </button>
+        <div id="header-auth-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITORIAL MASTHEAD HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex items-center justify-between">
+        <button id="mobile-menu-toggle" onclick="toggleMobileDrawer(true)" class="md:hidden p-2 text-slate-700 hover:text-slate-900 focus:outline-none" aria-label="Menu">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <a href="index.html" class="inline-block">
+          <h1 class="font-serif text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase">
+            THE NEWS PORTAL
+          </h1>
+        </a>
+
+        <a href="index.html" class="text-xs font-bold text-slate-700 hover:text-slate-900 border border-slate-300 px-3 py-1.5 rounded-md transition flex items-center gap-1">
+          ← Trang chủ
+        </a>
+      </div>
+
+      <div class="mt-3 sm:mt-4 pt-1.5 sm:pt-2 border-t-2 border-slate-900 border-b border-slate-200">
+        <div class="flex items-center justify-between">
+          <nav id="nav-categories-container" class="flex items-center space-x-5 overflow-x-auto no-scrollbar touch-scroll py-2 text-xs sm:text-sm font-bold tracking-wide uppercase text-slate-800 whitespace-nowrap flex-1">
+            <!-- Rendered dynamically -->
+          </nav>
+          
+          <!-- Search Bar -->
+          <form action="search.html" method="GET" class="hidden md:flex items-center relative shrink-0 ml-4">
+            <input type="text" name="q" placeholder="Tìm kiếm bài viết..." class="w-44 lg:w-56 pl-3 pr-8 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:bg-white dark:focus:bg-slate-900 focus:border-slate-800 focus:outline-none transition">
+            <button type="submit" class="absolute right-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200" aria-label="Tìm kiếm">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE SLIDE-OVER DRAWER MENU -->
+  <div id="mobile-drawer" class="fixed inset-0 z-50 hidden transition-all duration-300">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onclick="toggleMobileDrawer(false)"></div>
+    <div class="fixed inset-y-0 left-0 w-4/5 max-w-sm bg-white shadow-2xl z-50 p-6 flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+          <span class="font-serif text-xl font-bold tracking-tight text-slate-900">THE NEWS PORTAL</span>
+          <button onclick="toggleMobileDrawer(false)" class="p-1 text-slate-500 hover:text-slate-900 focus:outline-none" aria-label="Đóng menu">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="space-y-1 mt-6">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Chuyên Mục Tin Tức</div>
+          <nav id="mobile-nav-categories" class="flex flex-col space-y-1"></nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH HEADER SECTION -->
+  <section class="bg-white border-b border-slate-200 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+      <form action="search.html" method="GET" class="flex items-center gap-3 mb-3">
+        <input type="text" id="search-input-field" name="q" placeholder="Nhập từ khóa tìm kiếm..." class="flex-1 p-3 text-sm bg-slate-100 border border-slate-200 rounded-xl focus:bg-white focus:border-slate-800 focus:outline-none transition">
+        <button type="submit" class="px-6 py-3 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition shadow">Tìm kiếm</button>
+      </form>
+      <p id="search-results-summary" class="text-xs text-slate-500 font-medium">Đang tìm kiếm bài viết...</p>
+    </div>
+  </section>
+
+  <!-- SEARCH RESULTS MAIN FEED -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <div id="latest-feed-container" class="space-y-6">
+      <!-- Dynamic search results rendered by main.js -->
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth-state.js"></script>
+  <script src="js/auth-modal.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const query = urlParams.get('q') || urlParams.get('search') || '';
+      const input = document.getElementById('search-input-field');
+      if (input) input.value = query;
+      if (query) {
+        const summary = document.getElementById('search-results-summary');
+        if (summary) summary.innerHTML = `Kết quả tìm kiếm cho từ khóa: <strong class="text-slate-900">"${query}"</strong>`;
+      }
+    });
+  </script>
+</body>
+</html>

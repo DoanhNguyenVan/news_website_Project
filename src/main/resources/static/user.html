@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang Cá Nhân & Quản Trị Đọc Tin — The News Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#F7F8FA] text-slate-900 transition-colors duration-200">
+
+  <!-- TOP UTILITY BAR -->
+  <div class="bg-slate-900 text-slate-300 text-xs border-b border-slate-800 py-1.5 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <span id="current-date-display" class="font-medium text-slate-400"></span>
+        <span class="hidden md:inline-block text-slate-600">•</span>
+        <a href="index.html" class="hover:text-blue-400 transition">← Về trang chủ báo</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="theme-toggle-btn" class="hover:text-white transition flex items-center gap-1.5" title="Đổi giao diện Sáng / Tối">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+          <span class="hidden sm:inline">Chế độ tối</span>
+        </button>
+        <div id="header-auth-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER BRAND -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="inline-block group">
+            <h1 class="font-serif text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase group-hover:text-blue-600 transition">
+              THE NEWS PORTAL
+            </h1>
+          </a>
+          <span class="hidden sm:inline-block h-6 w-px bg-slate-200"></span>
+          <span class="hidden sm:inline-block text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
+            Trung tâm độc giả
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded-lg transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+            <span>Đọc báo ngay</span>
+          </a>
+          <button onclick="logoutUser()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 rounded-lg transition">
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- BREADCRUMB -->
+    <nav class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+      <a href="index.html" class="hover:text-blue-600 transition">Trang chủ</a>
+      <span>/</span>
+      <span class="text-slate-900 font-semibold">Trang cá nhân & Tùy chọn đọc tin</span>
+    </nav>
+
+    <!-- USER HERO PROFILE CARD -->
+    <div class="bg-white rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-200/80 shadow-xs relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-50/80 via-transparent to-transparent pointer-events-none rounded-full blur-3xl"></div>
+      
+      <div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4 sm:gap-5">
+          <!-- Avatar with dynamic status -->
+          <div class="relative shrink-0">
+            <div id="user-hero-avatar" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white text-xl sm:text-2xl font-bold flex items-center justify-center shadow-md overflow-hidden">
+              <span id="user-hero-initial">U</span>
+            </div>
+            <span class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 border-2 border-white rounded-full" title="Tài khoản hoạt động"></span>
+          </div>
+
+          <div class="space-y-1 min-w-0">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <h2 id="user-hero-fullname" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">Đang tải...</h2>
+              <span id="user-hero-role" class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                ĐỘC GIẢ
+              </span>
+              <span id="user-hero-provider" class="text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 flex items-center gap-1.5">
+                <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                <span>Tài khoản cục bộ</span>
+              </span>
+            </div>
+            <p id="user-hero-email" class="text-xs text-slate-500 font-medium truncate">loading@newsportal.com</p>
+            <div class="flex items-center gap-3 text-[11px] text-slate-400 pt-0.5 flex-wrap">
+              <span>Tên đăng nhập: <strong id="user-hero-username" class="text-slate-700">user</strong></span>
+              <span>•</span>
+              <span>Tham gia: <span id="user-hero-created" class="text-slate-700">2026</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+          <button onclick="switchTab('profile', true)" class="flex-1 md:flex-initial px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            <span>Sửa hồ sơ</span>
+          </button>
+          <button onclick="switchTab('preferences', true)" class="flex-1 md:flex-initial px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            <span>Đổi gu đọc tin</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRICS COUNTER ROW -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100">
+        <div onclick="switchTab('bookmarks', true)" class="cursor-pointer p-4 rounded-2xl bg-[#EFF6FF] border border-blue-100/80 hover:border-blue-300 transition group">
+          <div class="flex items-center justify-between text-blue-600 mb-1">
+            <span class="text-xs font-bold">Bài đã lưu</span>
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+          </div>
+          <div id="stat-bookmarks-count" class="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition">0</div>
+          <span class="text-[10px] text-slate-500 font-medium">Đọc lại mọi lúc</span>
+        </div>
+
+        <div onclick="switchTab('history', true)" class="cursor-pointer p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-blue-300 transition group">
+          <div class="flex items-center justify-between text-slate-600 mb-1">
+            <span class="text-xs font-bold">Đã xem gần đây</span>
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <div id="stat-history-count" class="text-2xl font-black text-slate-900 group-hover:text-blue-600 transition">0</div>
+          <span class="text-[10px] text-slate-500 font-medium">Nhật ký đọc tin</span>
+        </div>
+
+        <div onclick="switchTab('preferences', true)" class="cursor-pointer p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-blue-300 transition group">
+          <div class="flex items-center justify-between text-emerald-600 mb-1">
+            <span class="text-xs font-bold">Chủ đề theo dõi</span>
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+          </div>
+          <div id="stat-topics-count" class="text-2xl font-black text-slate-900 group-hover:text-emerald-600 transition">0</div>
+          <span class="text-[10px] text-slate-500 font-medium">Cá nhân hóa tin bài</span>
+        </div>
+
+        <div onclick="switchTab('comments', true)" class="cursor-pointer p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-blue-300 transition group">
+          <div class="flex items-center justify-between text-purple-600 mb-1">
+            <span class="text-xs font-bold">Ý kiến bình luận</span>
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+          </div>
+          <div id="stat-comments-count" class="text-2xl font-black text-slate-900 group-hover:text-purple-600 transition">0</div>
+          <span class="text-[10px] text-slate-500 font-medium">Đóng góp diễn đàn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS NAVIGATION PILLS -->
+    <div id="tabs-nav-bar" class="flex items-center gap-2 overflow-x-auto no-scrollbar touch-scroll py-2 border-b border-slate-200 text-xs font-bold scroll-mt-20">
+      <button onclick="switchTab('bookmarks')" id="tab-btn-bookmarks" class="tab-btn active px-4 py-2.5 rounded-xl text-white bg-blue-600 transition shadow-xs flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+        <span>Bài viết đã lưu</span>
+      </button>
+      <button onclick="switchTab('history')" id="tab-btn-history" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Lịch sử đọc tin</span>
+      </button>
+      <button onclick="switchTab('preferences')" id="tab-btn-preferences" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+        <span>Chủ đề yêu thích</span>
+      </button>
+      <button onclick="switchTab('comments')" id="tab-btn-comments" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+        <span>Bình luận của tôi</span>
+      </button>
+      <button onclick="switchTab('profile')" id="tab-btn-profile" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span>Hồ sơ cá nhân</span>
+      </button>
+      <button onclick="switchTab('security')" id="tab-btn-security" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-white transition flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <span>Đổi mật khẩu & Bảo mật</span>
+      </button>
+    </div>
+
+    <!-- TAB CONTENTS -->
+
+    <!-- ==================== TAB 1: BÀI VIẾT ĐÃ LƯU ==================== -->
+    <section id="tab-content-bookmarks" class="tab-pane space-y-6 scroll-mt-24">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Danh Sách Bài Viết Đã Lưu</h3>
+          <p class="text-xs text-slate-500">Các bài báo bạn đã lưu để xem lại hoặc đọc chậm khi rảnh rỗi.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="text" id="filter-bookmarks-input" oninput="filterSavedArticles()" placeholder="Lọc nhanh tiêu đề..." class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 w-48 sm:w-64 transition">
+          <button onclick="loadUserBookmarks()" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition flex items-center gap-1.5" title="Làm mới">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>Làm mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bookmarks Grid -->
+      <div id="bookmarks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="col-span-full py-12 text-center text-xs text-slate-400">Đang tải danh sách bài viết đã lưu...</div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: LỊCH SỬ ĐỌC ==================== -->
+    <section id="tab-content-history" class="tab-pane hidden space-y-6">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Lịch Sử Bài Viết Đã Xem Gần Đây</h3>
+          <p class="text-xs text-slate-500">Nhật ký các tin tức bạn đã mở đọc trong những ngày qua.</p>
+        </div>
+        <button onclick="confirmClearHistory()" class="px-3.5 py-1.5 text-xs font-bold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 rounded-lg transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          <span>Xóa toàn bộ lịch sử đọc</span>
+        </button>
+      </div>
+
+      <!-- History List -->
+      <div id="history-container" class="bg-white rounded-3xl border border-slate-200/80 divide-y divide-slate-100 overflow-hidden shadow-xs">
+        <div class="p-8 text-center text-xs text-slate-400">Đang tải lịch sử đọc tin...</div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: CHỦ ĐỀ YÊU THÍCH ==================== -->
+    <section id="tab-content-preferences" class="tab-pane hidden space-y-6">
+      <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 sm:p-5 flex items-start gap-4">
+        <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="text-xs text-slate-700 space-y-1">
+          <h4 class="font-bold text-blue-900">Thuật toán cá nhân hóa thông minh (For You)</h4>
+          <p class="text-slate-600 leading-relaxed">
+            Chọn các chuyên mục bạn quan tâm dưới đây. Hệ thống sẽ tự động tổng hợp và ưu tiên hiển thị các bài viết thuộc chủ đề này tại khối <strong>"DÀNH CHO BẠN"</strong> trên trang chủ.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-black text-slate-900 tracking-tight">Chọn Chuyên Mục Quan Tâm</h3>
+        <p class="text-xs text-slate-500">Tích chọn các lĩnh vực tin tức bạn muốn theo dõi thường xuyên:</p>
+      </div>
+
+      <div id="topics-checkboxes-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="col-span-full py-6 text-center text-xs text-slate-400">Đang tải danh mục tin tức...</div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+        <span id="save-topics-feedback" class="text-xs font-bold text-emerald-600 hidden">Đã lưu tùy chọn thành công!</span>
+        <button onclick="saveSelectedTopics()" class="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+          <span>Lưu Tùy Chọn Chủ Đề</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: BÌNH LUẬN CỦA TÔI ==================== -->
+    <section id="tab-content-comments" class="tab-pane hidden space-y-6">
+      <div>
+        <h3 class="text-lg font-black text-slate-900 tracking-tight">Bình Luận & Đóng Góp Ý Kiến</h3>
+        <p class="text-xs text-slate-500">Các ý kiến, góc nhìn bạn đã trao đổi dưới các bài viết tin tức.</p>
+      </div>
+
+      <div id="my-comments-container" class="space-y-3">
+        <div class="p-8 text-center text-xs text-slate-400">Đang tải bình luận của bạn...</div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: HỒ SƠ CÁ NHÂN ==================== -->
+    <section id="tab-content-profile" class="tab-pane hidden space-y-6">
+      <div class="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Cập Nhật Thông Tin Cá Nhân</h3>
+          <p class="text-xs text-slate-500">Quản lý họ và tên hiển thị cùng ảnh đại diện của bạn trên tòa soạn.</p>
+        </div>
+
+        <form onsubmit="handleUpdateProfile(event)" class="space-y-5">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700">Họ và tên hiển thị</label>
+            <input type="text" id="input-profile-fullname" required placeholder="Nguyễn Văn A" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700">Đường dẫn ảnh đại diện (Avatar URL)</label>
+            <input type="url" id="input-profile-avatar" placeholder="https://example.com/avatar.jpg" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition">
+            
+            <!-- Preset Avatars -->
+            <div class="pt-2">
+              <span class="text-[11px] text-slate-400 block mb-1.5 font-medium">Hoặc chọn nhanh avatar mẫu:</span>
+              <div class="flex items-center gap-2">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" onclick="selectPresetAvatar(this.src)" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-600 transition" alt="Preset 1">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" onclick="selectPresetAvatar(this.src)" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-600 transition" alt="Preset 2">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" onclick="selectPresetAvatar(this.src)" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-600 transition" alt="Preset 3">
+                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100" onclick="selectPresetAvatar(this.src)" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-600 transition" alt="Preset 4">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+            <div class="space-y-1">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tên đăng nhập (Username)</span>
+              <p id="readonly-profile-username" class="text-xs font-semibold text-slate-800 bg-slate-100 px-3 py-2 rounded-lg">user</p>
+            </div>
+            <div class="space-y-1">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Địa chỉ Email</span>
+              <p id="readonly-profile-email" class="text-xs font-semibold text-slate-800 bg-slate-100 px-3 py-2 rounded-lg">email@example.com</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-3">
+            <span id="profile-update-msg" class="text-xs font-bold text-emerald-600 hidden">Cập nhật thành công!</span>
+            <button type="submit" class="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+              <span>Lưu Thông Tin Hồ Sơ</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: ĐỔI MẬT KHẨU & BẢO MẬT ==================== -->
+    <section id="tab-content-security" class="tab-pane hidden space-y-6">
+      <div class="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Bảo Mật & Mật Khẩu Đăng Nhập</h3>
+          <p class="text-xs text-slate-500">Bảo vệ tài khoản của bạn bằng mật khẩu mạnh hoặc quản lý tài khoản Google.</p>
+        </div>
+
+        <!-- GOOGLE OAUTH USER NOTICE (Show if Google account) -->
+        <div id="google-auth-notice" class="hidden bg-emerald-50 border border-emerald-200/80 rounded-2xl p-5 flex items-start gap-4">
+          <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          <div class="space-y-1 text-xs text-emerald-900">
+            <h4 class="font-bold">Đăng nhập bảo mật qua Google Identity</h4>
+            <p class="text-emerald-700 leading-relaxed">
+              Tài khoản của bạn được liên kết trực tiếp với Google OAuth 2.0. Toàn bộ cơ chế xác thực hai lớp (2FA) và mật khẩu được Google bảo vệ an toàn. Bạn không cần phải đổi mật khẩu cục bộ.
+            </p>
+          </div>
+        </div>
+
+        <!-- LOCAL USER PASSWORD FORM (Show if Local account) -->
+        <form id="local-password-form" onsubmit="handleChangePassword(event)" class="space-y-5">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700">Mật khẩu hiện tại</label>
+            <input type="password" id="input-old-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700">Mật khẩu mới (Tối thiểu 6 ký tự)</label>
+            <input type="password" id="input-new-password" required minlength="6" placeholder="••••••••" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition">
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700">Xác nhận mật khẩu mới</label>
+            <input type="password" id="input-confirm-password" required minlength="6" placeholder="••••••••" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition">
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-3">
+            <span id="password-feedback-msg" class="text-xs font-bold hidden"></span>
+            <button type="submit" class="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <span>Cập Nhật Mật Khẩu</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-16 bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="font-bold text-slate-800">THE NEWS PORTAL — TÒA SOẠN BÁO CHÍ ĐA PHƯƠNG TIỆN</p>
+      <p class="mt-1 text-slate-400">© 2026 The News Portal. Độc lập • Khách quan • Đa chiều.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth-state.js"></script>
+  <script src="js/user.js"></script>
+</body>
+</html>

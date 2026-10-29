@@ -1,0 +1,171 @@
+# SWAGGER / OPENAPI SPECIFICATION (API DOCUMENTATION)
+# News Portal RESTful API - Version 1.0.0
+
+openapi: 3.0.3
+info:
+  title: News Portal RESTful API Documentation
+  description: Hệ thống API Backend Báo chí & Tin tức Đa phương tiện phát triển bằng Java Spring Boot, MySQL và Spring Security JWT.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+
+paths:
+  /auth/login:
+    post:
+      summary: Đăng nhập hệ thống (Băm mật khẩu BCrypt + Sinh JWT Token)
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: admin123
+      responses:
+        '200':
+          description: Đăng nhập thành công, trả về Access Token & Refresh Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  tokenType:
+                    type: string
+                    example: Bearer
+                  role:
+                    type: string
+                    example: SUPER_ADMIN
+
+  /news/homepage:
+    get:
+      summary: Trả về dữ liệu Trang chủ (Spotlight 1+4, Latest feed, Top đọc nhiều nhất)
+      tags:
+        - Public Portal
+      responses:
+        '200':
+          description: OK
+
+  /news/category/{slug}:
+    get:
+      summary: Lấy danh sách bài viết theo chuyên mục (Hỗ trợ Phân trang Pagination)
+      tags:
+        - Public Portal
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: cong-nghe
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: OK
+
+  /news/article/{slug}:
+    get:
+      summary: Chi tiết bài viết (Tự động tăng views_count)
+      tags:
+        - Public Portal
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /news/search:
+    get:
+      summary: Full-text Search tìm kiếm bài viết theo từ khóa
+      tags:
+        - Public Portal
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            example: Oracle Cloud
+      responses:
+        '200':
+          description: OK
+
+  /admin/posts:
+    post:
+      summary: Tạo mới bài viết / Lưu nháp (Yêu cầu JWT Token & Role Author/Editor)
+      tags:
+        - Editorial CMS
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                sapo:
+                  type: string
+                content:
+                  type: string
+                categorySlug:
+                  type: string
+      responses:
+        '200':
+          description: Tạo thành công
+
+  /admin/posts/{id}/status:
+    patch:
+      summary: Duyệt bài xuất bản hoặc Từ chối kèm lý do (Role Editor/Super Admin)
+      tags:
+        - Editorial CMS
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+            example: PUBLISHED
+      responses:
+        '200':
+          description: Thành công
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
