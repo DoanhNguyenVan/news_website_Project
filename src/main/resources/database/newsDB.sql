@@ -170,6 +170,24 @@ CREATE TABLE `poll_options` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ====================================================================
+-- 6.5. HỆ THỐNG TAGS & PHÂN LOẠI NỘI DUNG (TAGS & POST_TAGS)
+-- ====================================================================
+CREATE TABLE IF NOT EXISTS `tags` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(50) NOT NULL UNIQUE,
+  `slug` VARCHAR(60) NOT NULL UNIQUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `post_tags` (
+  `post_id` BIGINT NOT NULL,
+  `tag_id` BIGINT NOT NULL,
+  PRIMARY KEY (`post_id`, `tag_id`),
+  CONSTRAINT `fk_post_tags_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_post_tags_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ====================================================================
 -- 7. CÁ NHÂN HÓA ĐỌC BÁO & LƯU BÀI VIẾT (PERSONALIZATION & BOOKMARKS)
 -- ====================================================================
 CREATE TABLE IF NOT EXISTS `reading_history` (
