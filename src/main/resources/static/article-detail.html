@@ -48,7 +48,7 @@
             <span class="font-serif text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 uppercase group-hover:text-blue-950 transition block">
               THE NEWS PORTAL
             </span>
-            <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 mt-0.5">
+            <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 mt-0.5" data-i18n="header.slogan">
               Thông Tin Độc Lập • Khách Quan • Đa Chiều
             </p>
           </a>
@@ -112,7 +112,7 @@
     
     <!-- BREADCRUMB -->
     <nav class="flex items-center text-xs text-slate-500 mb-6 gap-2 border-b border-slate-200 pb-3">
-      <a href="index.html" class="hover:text-slate-900">Trang chủ</a>
+      <a href="index.html" class="hover:text-slate-900" data-i18n="nav.home">Trang chủ</a>
       <span>/</span>
       <span id="article-breadcrumb-category" class="font-bold text-slate-900 uppercase">Chuyên mục</span>
     </nav>
@@ -143,10 +143,10 @@
         <!-- ACTION TOOLBAR -->
         <div class="flex items-center gap-2.5">
           <button id="bookmark-btn" onclick="toggleArticleBookmark()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Lưu bài viết vào danh sách đọc sau">
-            <span id="bookmark-icon" class="inline-flex"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span> <span id="bookmark-text">Lưu bài</span>
+            <span id="bookmark-icon" class="inline-flex"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span> <span id="bookmark-text" data-i18n="btn.save">Lưu bài</span>
           </button>
           <button id="copy-link-btn" onclick="copyArticleLink()" class="px-3.5 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> <span>Sao chép</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> <span data-i18n="btn.copy">Sao chép</span>
           </button>
         </div>
       </div>

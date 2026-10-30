@@ -1,26 +1,24 @@
 /**
  * =========================================================================================
- * NEWPORTAL HYBRID 2.0 I18N SYSTEM (Spring Boot i18n + Client Widget)
+ * NEWPORTAL HYBRID 2.0 I18N SYSTEM (Spring Boot i18n + Client Widget) - REFINED
  * 
- * Kiến trúc 3 tầng phân tách:
- * - Tầng 1: UI tĩnh (Menu, Button, Footer, Labels) dịch tức thì 0ms qua Dictionary & [data-i18n].
- * - Tầng 2: Số liệu, Ngày giờ, Tác giả, % Polls bảo vệ 100% bằng lớp chắn `translate="no"` & `.notranslate` + Intl.
- * - Tầng 3: Nội dung động (Bài viết, Bình luận) dịch cục bộ qua Google Translate Engine.
- * 
- * Xử lý 3 "Bẫy ngầm" môi trường production (Render / Cloud):
- * 1. Khôi phục Tiếng Việt (VI) 0ms KHÔNG cần reload trang nhờ cơ chế In-Memory DOM Snapshot.
- * 2. Triệt tiêu Race Condition: Tầng 1 & 2 chạy đồng bộ trước khi Tầng 3 quét DOM.
- * 3. Tự động khắc phục nghẽn mạng của element.js qua cơ chế Auto-Retry (tối đa 3 lần, delay 1.5s).
+ * - Tầng 1 (0ms): Dịch tức thì UI Layout, Menu Chuyên mục, Nút bấm, Slogan qua Dictionary.
+ * - Tầng 2: Bảo vệ các thành phần hệ thống nhạy cảm (.np-lang-pill, svg, canvas).
+ *   QUAN TRỌNG: KHÔNG khóa translate="no" trên header, nav, footer để Tiêu đề bài viết,
+ *   Sapo, Menu chuyên mục và Tác giả được dịch sang tiếng Anh trọn vẹn 100%!
+ * - Tầng 3: Tự động kích hoạt dịch lại (Re-trigger) ngay khi REST API fetch xong bài viết.
+ * - Snapshot DOM: Khôi phục tiếng Việt 0ms không cần reload trang.
  * =========================================================================================
  */
 (function() {
   'use strict';
 
   // ============================================================================
-  // 1. TỪ ĐIỂN TĨNH BẢN ĐỊA HÓA (TẦNG 1: UI DICTIONARY - 0ms LATENCY)
+  // 1. TỪ ĐIỂN TĨNH BẢN ĐỊA HÓA (UI DICTIONARY & DANH MỤC - 0ms TỨC THÌ)
   // ============================================================================
   const UI_DICT = {
     vi: {
+      "header.slogan": "Thông Tin Độc Lập • Khách Quan • Đa Chiều",
       "nav.home": "Trang chủ",
       "nav.trending": "Xu hướng",
       "nav.categories": "Chuyên mục",
@@ -34,6 +32,8 @@
       "search.placeholder": "Tìm kiếm bài viết (Enter để lọc)...",
       "btn.save": "Lưu bài",
       "btn.saved": "Đã lưu",
+      "btn.copy": "Sao chép",
+      "btn.copied": "Đã sao chép",
       "btn.share": "Chia sẻ",
       "btn.read_more": "Đọc tiếp",
       "btn.comment": "Bình luận",
@@ -49,6 +49,9 @@
       "theme.light": "Chế độ sáng",
       "footer.editorial": "Editorial SaaS Suite — Tòa soạn Báo chí Kỹ thuật số",
       "footer.rights": "Bản quyền thuộc về Tòa soạn Báo chí NewsPortal.",
+      "article.author": "Tác giả:",
+      "article.views": "lượt xem",
+      "article.reading_time": "phút đọc",
       "admin.dashboard": "Bảng điều khiển",
       "admin.posts": "Quản lý Bài viết",
       "admin.categories": "Quản lý Chuyên mục",
@@ -60,6 +63,7 @@
       "admin.settings": "Cài đặt & Cache"
     },
     en: {
+      "header.slogan": "Independent • Objective • Multidimensional Information",
       "nav.home": "Home",
       "nav.trending": "Trending",
       "nav.categories": "Categories",
@@ -73,6 +77,8 @@
       "search.placeholder": "Search articles (Press Enter)...",
       "btn.save": "Save",
       "btn.saved": "Saved",
+      "btn.copy": "Copy link",
+      "btn.copied": "Copied",
       "btn.share": "Share",
       "btn.read_more": "Read More",
       "btn.comment": "Comment",
@@ -88,6 +94,9 @@
       "theme.light": "Light mode",
       "footer.editorial": "Editorial SaaS Suite — Digital Publishing Platform",
       "footer.rights": "All rights reserved by NewsPortal Editorial Suite.",
+      "article.author": "Author:",
+      "article.views": "views",
+      "article.reading_time": "min read",
       "admin.dashboard": "Dashboard",
       "admin.posts": "Articles Management",
       "admin.categories": "Categories",
@@ -100,14 +109,43 @@
     }
   };
 
-  // Trạng thái hệ thống
+  // Từ điển danh mục tin tức (chuyển đổi 0ms cho Navbar)
+  const CATEGORY_MAP = {
+    vi: {
+      "thoi-su": "Thời sự",
+      "the-gioi": "Thế giới",
+      "kinh-doanh": "Kinh doanh",
+      "cong-nghe": "Công nghệ",
+      "the-thao": "Thể thao",
+      "giai-tri": "Giải trí",
+      "suc-khoe": "Sức khỏe",
+      "giao-duc": "Giáo dục",
+      "phap-luat": "Pháp luật",
+      "ai-blockchain": "AI & Blockchain",
+      "meme": "Meme"
+    },
+    en: {
+      "thoi-su": "Current Affairs",
+      "the-gioi": "World",
+      "kinh-doanh": "Business",
+      "cong-nghe": "Technology",
+      "the-thao": "Sports",
+      "giai-tri": "Entertainment",
+      "suc-khoe": "Health",
+      "giao-duc": "Education",
+      "phap-luat": "Law & Justice",
+      "ai-blockchain": "AI & Blockchain",
+      "meme": "Humor & Meme"
+    }
+  };
+
   let currentLang = localStorage.getItem('newsportal_lang') || 'vi';
   let isGoogleTranslateReady = false;
   let pendingTargetLang = null;
   let retryCount = 0;
   const MAX_RETRIES = 3;
 
-  // In-Memory Cache lưu trữ HTML nguyên bản của các vùng động (BẪY NGẦM 1)
+  // In-Memory Cache lưu trữ HTML nguyên bản của các vùng động
   const dynamicContentSnapshot = new Map();
 
   // ============================================================================
@@ -116,7 +154,6 @@
   const style = document.createElement('style');
   style.id = 'hybrid-i18n-styles';
   style.textContent = `
-    /* Triệt tiêu 100% mọi banner, iframe và thanh đẩy tụt của Google Translate */
     .goog-te-banner-frame,
     .goog-te-banner-frame.skiptranslate,
     iframe.goog-te-banner-frame,
@@ -153,7 +190,6 @@
       box-shadow: none !important;
     }
 
-    /* Modern Editorial Language Switcher Pill */
     .np-lang-pill {
       display: inline-flex;
       align-items: center;
@@ -201,7 +237,6 @@
       100% { opacity: 1; }
     }
 
-    /* Light Variant cho Header Admin */
     .np-lang-pill-light {
       background: #f1f5f9;
       border-color: #e2e8f0;
@@ -223,7 +258,6 @@
   `;
   document.head.appendChild(style);
 
-  // Khắc phục triệt để lỗi Google Translate đẩy tụt body
   function enforceZeroBodyTop() {
     if (document.body && document.body.style.top && document.body.style.top !== '0px') {
       document.body.style.top = '0px';
@@ -239,7 +273,6 @@
   observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
   setInterval(enforceZeroBodyTop, 300);
 
-  // Thẻ container ẩn cho Google Translate
   let gtDiv = document.getElementById('google_translate_element');
   if (!gtDiv) {
     gtDiv = document.createElement('div');
@@ -250,12 +283,12 @@
   }
 
   // ============================================================================
-  // 3. TẦNG 1: THI CÔNG DỊCH GIAO DIỆN TĨNH (DATA-I18N - TỐC ĐỘ 1ms)
+  // 3. TẦNG 1: DỊCH GIAO DIỆN TĨNH & MENU CHUYÊN MỤC (0ms)
   // ============================================================================
   function applyStaticTranslations(lang) {
     const dict = UI_DICT[lang] || UI_DICT.vi;
     
-    // Quét các thẻ có data-i18n
+    // 1. Quét các thẻ có data-i18n
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (dict[key]) {
@@ -263,7 +296,7 @@
       }
     });
 
-    // Quét các thẻ input/textarea có data-i18n-ph (placeholder)
+    // 2. Quét các input có data-i18n-ph
     document.querySelectorAll('[data-i18n-ph]').forEach(el => {
       const key = el.getAttribute('data-i18n-ph');
       if (dict[key]) {
@@ -271,48 +304,50 @@
       }
     });
 
-    // Tự động map một số phần tử cốt lõi phổ biến nếu chưa có data-i18n
+    // 3. Dịch tức thì toàn bộ Menu Chuyên Mục trên Navbar & Mobile Drawer
+    document.querySelectorAll('[data-category-slug]').forEach(a => {
+      const slug = a.getAttribute('data-category-slug');
+      if (CATEGORY_MAP[lang] && CATEGORY_MAP[lang][slug]) {
+        a.textContent = CATEGORY_MAP[lang][slug].toUpperCase();
+      }
+    });
+
+    // 4. Dịch các thành phần UI thông dụng
     const searchInput = document.getElementById('search-input') || document.getElementById('global-header-search');
     if (searchInput) searchInput.placeholder = dict["search.placeholder"];
+
+    const bookmarkText = document.getElementById('bookmark-text');
+    if (bookmarkText) {
+      const isSaved = bookmarkText.textContent.includes('Đã') || bookmarkText.textContent.includes('Saved');
+      bookmarkText.textContent = isSaved ? dict["btn.saved"] : dict["btn.save"];
+    }
+
+    const copyBtn = document.getElementById('copy-link-btn');
+    if (copyBtn) {
+      const copySpan = copyBtn.querySelector('span');
+      if (copySpan) copySpan.textContent = dict["btn.copy"];
+    }
   }
 
   // ============================================================================
-  // 4. TẦNG 2: BẢO VỆ SỐ LIỆU, INTEL VÀ LAYOUT (NOTRANSLATE & INTL)
+  // 4. TẦNG 2: BẢO VỆ CÁC THÀNH PHẦN HỆ THỐNG
+  // (CHÚ Ý: Không khóa header/nav/footer để bài viết & chuyên mục được dịch đầy đủ!)
   // ============================================================================
   function protectMetricsAndLayout() {
-    // 1. Toàn bộ Header, Navbar, Sidebar và Footer được gắn notranslate để Google bỏ qua
-    const safeSelectors = [
-      'header',
-      'nav',
-      '#mobile-drawer',
-      '#admin-sidebar',
-      'footer',
+    // 1. Gỡ bỏ translate="no" nếu trước đó từng bị gán nhầm vào header/nav/footer
+    document.querySelectorAll('header, nav, footer, #mobile-drawer, #admin-sidebar, #article-title, #article-sapo').forEach(el => {
+      el.classList.remove('notranslate');
+      el.removeAttribute('translate');
+    });
+
+    // 2. Chỉ bảo vệ các thành phần thực sự nhạy cảm
+    const strictSafe = [
       '.np-lang-pill',
-      '#theme-toggle-btn',
       '#sidebar-collapse-btn',
-      '.news-img-zoom',
       'svg',
       'canvas'
     ];
-    safeSelectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        el.classList.add('notranslate');
-        el.setAttribute('translate', 'no');
-      });
-    });
-
-    // 2. Bảo vệ các vùng chứa số liệu (Số lượt xem, Thời gian, Tác giả, % Polls)
-    const metricSelectors = [
-      '.view-count',
-      '.read-time',
-      '.rel-time',
-      '.poll-percentage',
-      '.poll-votes',
-      '.series-order',
-      'time',
-      'strong.byline'
-    ];
-    metricSelectors.forEach(sel => {
+    strictSafe.forEach(sel => {
       document.querySelectorAll(sel).forEach(el => {
         el.classList.add('notranslate');
         el.setAttribute('translate', 'no');
@@ -329,25 +364,41 @@
     '#personalized-container',
     '#popular-posts-sidebar',
     '#article-detail-container',
-    '#article-content-body',
+    '#article-content',
     '#comments-list',
-    '#search-results-container',
-    '#admin-posts-table'
+    '#search-results-container'
   ];
 
   function snapshotDynamicContent() {
     DYNAMIC_CONTAINERS.forEach(sel => {
       const el = document.querySelector(sel);
       if (el && el.innerHTML.trim().length > 0 && !dynamicContentSnapshot.has(sel)) {
-        // Lưu lại bản HTML Tiếng Việt nguyên vẹn trước khi Google Translate can thiệp
         dynamicContentSnapshot.set(sel, el.innerHTML);
       }
     });
+    // Lưu thêm snapshot tiêu đề và sapo nếu ở trang chi tiết
+    const titleEl = document.getElementById('article-title');
+    if (titleEl && titleEl.textContent.trim()) {
+      dynamicContentSnapshot.set('__article_title', titleEl.textContent);
+    }
+    const sapoEl = document.getElementById('article-sapo');
+    if (sapoEl && sapoEl.textContent.trim()) {
+      dynamicContentSnapshot.set('__article_sapo', sapoEl.textContent);
+    }
   }
 
   function restoreOriginalVietnameseContent() {
-    // Khôi phục ngay lập tức bản gốc Tiếng Việt 100% không dính thẻ <font> của Google
     dynamicContentSnapshot.forEach((savedHtml, sel) => {
+      if (sel === '__article_title') {
+        const titleEl = document.getElementById('article-title');
+        if (titleEl) titleEl.textContent = savedHtml;
+        return;
+      }
+      if (sel === '__article_sapo') {
+        const sapoEl = document.getElementById('article-sapo');
+        if (sapoEl) sapoEl.textContent = savedHtml;
+        return;
+      }
       const el = document.querySelector(sel);
       if (el && savedHtml) {
         el.innerHTML = savedHtml;
@@ -356,7 +407,7 @@
   }
 
   // ============================================================================
-  // 6. BẪY NGẦM 2: TRÁNH RACE CONDITION KHI CHUYỂN NGÔN NGỮ
+  // 6. CHUYỂN ĐỔI NGÔN NGỮ (HYBRID 2.0)
   // ============================================================================
   function updatePillButtons(lang, isLoading = false) {
     document.querySelectorAll('.np-lang-btn').forEach(btn => {
@@ -376,23 +427,19 @@
     const hostname = window.location.hostname;
 
     if (targetLang === 'vi') {
-      // 1. Chạy Tầng 1: Đổi từ điển sang Tiếng Việt (1ms)
       applyStaticTranslations('vi');
       currentLang = 'vi';
       localStorage.setItem('newsportal_lang', 'vi');
       updatePillButtons('vi', false);
 
-      // 2. Chạy Tầng 3: Khôi phục Snapshot nguyên bản (0ms - Không reload trang)
       restoreOriginalVietnameseContent();
 
-      // 3. Reset Google Translate combo về rỗng / vi
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
         combo.value = '';
         combo.dispatchEvent(new Event('change'));
       }
 
-      // 4. Xóa sạch mọi cookie dịch
       const past = 'Thu, 01 Jan 1970 00:00:00 UTC';
       document.cookie = `googtrans=; expires=${past}; path=/;`;
       document.cookie = `googtrans=/vi/vi; expires=${past}; path=/;`;
@@ -404,22 +451,17 @@
     }
 
     if (targetLang === 'en') {
-      // BƯỚC A (ĐỒNG BỘ): Chụp snapshot Tiếng Việt ngay trước khi dịch
       snapshotDynamicContent();
-
-      // BƯỚC B (ĐỒNG BỘ): Chạy Tầng 1 (data-i18n) và Tầng 2 (Lớp chắn notranslate)
       applyStaticTranslations('en');
       protectMetricsAndLayout();
 
       currentLang = 'en';
       localStorage.setItem('newsportal_lang', 'en');
 
-      // BƯỚC C (BẤT ĐỒNG BỘ): Kích hoạt Tầng 3 (Google Translate chỉ dịch các vùng bài viết)
       if (isGoogleTranslateReady) {
         triggerGoogleTranslateToEn();
         updatePillButtons('en', false);
       } else {
-        // Nếu script Google đang load hoặc retry, lưu cờ chờ
         pendingTargetLang = 'en';
         updatePillButtons('en', true);
         loadGoogleTranslateScript();
@@ -444,8 +486,20 @@
     }
   }
 
+  // Hook nhận diện khi REST API nạp bài viết / danh mục mới vào DOM
+  let retriggerTimer = null;
+  window.notifyDynamicContentUpdated = function() {
+    if (currentLang === 'en') {
+      applyStaticTranslations('en');
+      clearTimeout(retriggerTimer);
+      retriggerTimer = setTimeout(() => {
+        triggerGoogleTranslateToEn();
+      }, 120);
+    }
+  };
+
   // ============================================================================
-  // 7. BẪY NGẦM 3: AUTO-RETRY CHO ELEMENT.JS KHI NGHẼN MẠNG TRÊN CLOUD / RENDER
+  // 7. AUTO-RETRY KHI NGHẼN MẠNG ELEMENT.JS TRÊN CLOUD
   // ============================================================================
   window.googleTranslateElementInit = function() {
     try {
@@ -458,28 +512,25 @@
       isGoogleTranslateReady = true;
       enforceZeroBodyTop();
 
-      // Nếu có yêu cầu chuyển EN đang chờ lúc script nạp dở
       if (pendingTargetLang === 'en' || currentLang === 'en') {
         setTimeout(() => {
           triggerGoogleTranslateToEn();
           updatePillButtons('en', false);
           pendingTargetLang = null;
-        }, 300);
+        }, 200);
       }
     } catch (err) {
-      handleScriptLoadFailure('Khởi tạo TranslateElement lỗi: ' + err.message);
+      handleScriptLoadFailure('Khởi tạo lỗi: ' + err.message);
     }
   };
 
   function handleScriptLoadFailure(reason) {
     if (retryCount < MAX_RETRIES) {
       retryCount++;
-      console.warn(`[Hybrid i18n] element.js chậm (${reason}), đang tự động thử lại lần ${retryCount}/${MAX_RETRIES}...`);
       setTimeout(() => {
         loadGoogleTranslateScript(true);
       }, 1500);
     } else {
-      console.warn('[Hybrid i18n] element.js không phản hồi sau 3 lần retry. Giữ nguyên dịch giao diện tĩnh Tầng 1.');
       updatePillButtons(currentLang, false);
     }
   }
@@ -496,25 +547,24 @@
     gtScript.id = 'gt-element-script';
     gtScript.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     gtScript.async = true;
-    gtScript.onerror = () => handleScriptLoadFailure('Lỗi mạng tải CDN Google Translate');
+    gtScript.onerror = () => handleScriptLoadFailure('Lỗi tải CDN Google');
     document.head.appendChild(gtScript);
 
-    // Timeout kiểm tra sau 4s nếu callback không kích hoạt
     setTimeout(() => {
       if (!isGoogleTranslateReady && retryCount < MAX_RETRIES) {
-        handleScriptLoadFailure('Timeout 4s không có phản hồi');
+        handleScriptLoadFailure('Timeout 4s');
       }
     }, 4000);
   }
 
   // ============================================================================
-  // 8. TỰ ĐỘNG CHÈN NÚT CHUYỂN ĐỔI NGÔN NGỮ (PILL WIDGET) VÀO HEADER
+  // 8. TỰ ĐỘNG GẮN NÚT CHUYỂN NGÔN NGỮ (PILL WIDGET)
   // ============================================================================
   function createPillElement(isLightVariant = false) {
     const pill = document.createElement('div');
     pill.className = `np-lang-pill ${isLightVariant ? 'np-lang-pill-light' : ''} notranslate`;
     pill.setAttribute('translate', 'no');
-    pill.title = 'Chuyển đổi ngôn ngữ / Switch Language (Hybrid 2.0)';
+    pill.title = 'Chuyển đổi ngôn ngữ / Switch Language';
     pill.innerHTML = `
       <button type="button" class="np-lang-btn ${currentLang === 'vi' ? 'active' : ''}" data-lang="vi" onclick="window.switchNewsPortalLang('vi')" aria-label="Tiếng Việt">
         <span>🇻🇳</span><span>VI</span>
@@ -527,16 +577,13 @@
   }
 
   function mountLanguageSwitcher() {
-    // 1. Áp dụng bảo vệ layout và metrics ngay khi DOM tải
     protectMetricsAndLayout();
 
-    // 2. Nếu người dùng đã chọn English từ trước
     if (currentLang === 'en') {
       applyStaticTranslations('en');
       loadGoogleTranslateScript();
     }
 
-    // 3. Tự động gắn nút vào Header công khai (trước #theme-toggle-btn)
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn && themeBtn.parentNode && !document.querySelector('.np-lang-pill')) {
       const pill = createPillElement(false);
@@ -544,7 +591,6 @@
       return;
     }
 
-    // 4. Hoặc gắn vào Header của Admin Portal
     const adminHeaderRight = document.querySelector('header .flex.items-center.gap-4') || document.querySelector('header .flex.items-center.gap-3');
     if (adminHeaderRight && !document.querySelector('.np-lang-pill')) {
       const pill = createPillElement(true);

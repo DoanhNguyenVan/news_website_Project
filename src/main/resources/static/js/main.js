@@ -130,14 +130,14 @@ async function initCategoriesNav() {
           ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1'
           : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
 
-        const homeLinkHtml = `<a href="index.html" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${homeActive}">Trang Chủ</a>`;
+        const homeLinkHtml = `<a href="index.html" data-i18n="nav.home" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${homeActive}">Trang Chủ</a>`;
 
         const categoryLinksHtml = categories.map(cat => {
           const isActive = (currentCategorySlug && (currentCategorySlug === cat.slug || currentCategorySlug == cat.id));
           const activeClasses = isActive 
             ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1' 
             : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
-          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${activeClasses}">${cat.name}</a>`;
+          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${activeClasses}">${cat.name}</a>`;
         }).join('');
 
         container.innerHTML = homeLinkHtml + categoryLinksHtml;
@@ -145,12 +145,12 @@ async function initCategoriesNav() {
 
       if (mobileContainer) {
         const homeStyle = isHomePage && !currentCategorySlug ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100';
-        const mobileHomeHtml = `<a href="index.html" class="px-3 py-2 rounded-lg text-sm font-medium ${homeStyle}">Trang Chủ</a>`;
+        const mobileHomeHtml = `<a href="index.html" data-i18n="nav.home" class="px-3 py-2 rounded-lg text-sm font-medium ${homeStyle}">Trang Chủ</a>`;
 
         const mobileCategoryHtml = categories.map(cat => {
           const isActive = (currentCategorySlug && (currentCategorySlug === cat.slug || currentCategorySlug == cat.id));
           const activeStyle = isActive ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100';
-          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" class="px-3 py-2 rounded-lg text-sm font-medium ${activeStyle}">${cat.name}</a>`;
+          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-3 py-2 rounded-lg text-sm font-medium ${activeStyle}">${cat.name}</a>`;
         }).join('');
 
         mobileContainer.innerHTML = mobileHomeHtml + mobileCategoryHtml;
@@ -158,9 +158,14 @@ async function initCategoriesNav() {
 
       if (footerContainer) {
         footerContainer.innerHTML = `
-          <li><a href="index.html" class="hover:text-white transition">Trang chủ</a></li>
-          ${categories.slice(0, 5).map(cat => `<li><a href="category.html?slug=${cat.slug}&id=${cat.id}" class="hover:text-white transition">${cat.name}</a></li>`).join('')}
+          <li><a href="index.html" data-i18n="nav.home" class="hover:text-white transition">Trang chủ</a></li>
+          ${categories.slice(0, 5).map(cat => `<li><a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="hover:text-white transition">${cat.name}</a></li>`).join('')}
         `;
+      }
+      
+      // Thông báo cập nhật ngôn ngữ cho danh mục mới render
+      if (window.notifyDynamicContentUpdated) {
+        window.notifyDynamicContentUpdated();
       }
     }
   } catch (err) {
@@ -913,6 +918,11 @@ async function initArticleDetailPage() {
     renderArticleCommentSection(post);
 
     loadArticleComments(currentArticlePostId);
+
+    // Kích hoạt dịch tự động cho nội dung bài viết mới nạp vào DOM nếu đang ở chế độ EN
+    if (window.notifyDynamicContentUpdated) {
+      window.notifyDynamicContentUpdated();
+    }
   } catch (err) {
     console.error("Lỗi nạp bài viết:", err);
   }
