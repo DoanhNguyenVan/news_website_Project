@@ -558,8 +558,8 @@ async function loadDashboardData() {
       animateCountNumber('stat-total-views', stats.totalViews || 0);
       animateCountNumber('stat-total-users', stats.totalUsers || 0);
       animateCountNumber('stat-total-categories', stats.totalCategories || 0);
-      const pendComm = document.getElementById('stat-pending-comments');
-      if (pendComm) animateCountNumber('stat-pending-comments', stats.pendingComments || 0);
+      const commEl = document.getElementById('stat-total-comments') || document.getElementById('stat-pending-comments');
+      if (commEl) animateCountNumber(commEl.id, stats.totalComments || 0);
     }
     const topPosts = await loadDashboardTopArticles();
     if (getUserRole() === 'SUPER_ADMIN') {
