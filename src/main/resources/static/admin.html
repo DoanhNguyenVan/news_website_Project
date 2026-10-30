@@ -517,23 +517,7 @@
           </div>
         </div>
 
-        <!-- ROW 5: SUPER ADMIN SUITE SHORTCUT BAR -->
-        <div class="saas-card p-6 bg-blue-600 text-white flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm" data-role-required="SUPER_ADMIN">
-          <div>
-            <h2 class="text-base font-extrabold tracking-tight">Quyền Quản Trị Hệ Thống (Super Admin Mode)</h2>
-            <p class="text-blue-100 text-xs mt-1 max-w-xl">
-              Toàn quyền duyệt tin tức, cấu hình chuyên mục, quản lý người dùng, phân quyền tác giả và thanh lọc bộ nhớ cache hệ thống.
-            </p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button onclick="switchTab('posts'); togglePostForm(true);" class="px-4 py-2.5 bg-white hover:bg-blue-50 text-blue-600 font-bold text-xs rounded-xl shadow-xs transition cursor-pointer">
-              + Tạo Bài Viết Mới
-            </button>
-            <button onclick="switchTab('users')" class="px-4 py-2.5 bg-blue-700 hover:bg-blue-600 text-white font-bold text-xs rounded-xl border border-blue-400/40 transition cursor-pointer">
-              Quản Trị Users
-            </button>
-          </div>
-        </div>
+        <!-- ROW 5: SUPER ADMIN SUITE SHORTCUT BAR (Hidden per request) -->
 
       </div>
 
@@ -858,6 +842,7 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase font-bold">
+                  <th class="p-3.5 w-16">ID</th>
                   <th class="p-3.5">Bài viết</th>
                   <th class="p-3.5">Chuyên mục</th>
                   <th class="p-3.5">Tác giả</th>
@@ -1010,7 +995,7 @@
       <!-- ========================================================
            TAB 5: QUẢN LÝ COMMENT (COMMENTS)
       ======================================================== -->
-      <div id="section-comments" class="space-y-6 hidden" data-role-required="SUPER_ADMIN">
+      <div id="section-comments" class="space-y-6 hidden">
         <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-xs font-bold text-slate-500 uppercase">Trạng thái:</span>

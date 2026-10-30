@@ -1273,7 +1273,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
   const table = document.getElementById('admin-posts-table');
   if (!table) return;
 
-  renderTableSkeleton('admin-posts-table', 7, 5);
+  renderTableSkeleton('admin-posts-table', 8, 5);
 
   try {
     const postsData = await ApiService.getAdminPosts(currentPostStatus, currentPostsPage, POSTS_PAGE_SIZE);
@@ -1305,7 +1305,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
     renderPostsPagination(currentPostsPage, totalPostsPages, totalPostsCount);
 
     if (!posts || posts.length === 0) {
-      table.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Không có bài viết nào phù hợp.</td></tr>`;
+      table.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">Không có bài viết nào phù hợp.</td></tr>`;
       return;
     }
 
@@ -1400,6 +1400,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
 
       return `
         <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+          <td class="p-3.5 font-mono text-xs font-semibold text-slate-500 whitespace-nowrap">#${p.id}</td>
           <td class="p-3.5 max-w-sm">
             <div class="flex items-center gap-1 mb-1">
               ${seriesBadge}
@@ -1426,7 +1427,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
       `;
     }).join('');
   } catch (err) {
-    table.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Lỗi nạp bài viết!</td></tr>`;
+    table.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-red-500">Lỗi nạp bài viết!</td></tr>`;
   }
 }
 

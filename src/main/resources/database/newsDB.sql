@@ -217,43 +217,10 @@ INSERT INTO `users` (`username`, `email`, `password_hash`, `full_name`, `auth_pr
 ('editor1', 'editor1@newsportal.com', '$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Trưởng Ban Biên Tập', 'LOCAL', 'EDITOR', 'ACTIVE'),
 ('author1', 'author1@newsportal.com', '$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Phóng viên Nguyễn Văn A', 'LOCAL', 'AUTHOR', 'ACTIVE');
 
--- 2. Hệ thống chuyên mục báo chí sinh viên
-INSERT INTO `categories` (`id`, `name`, `slug`, `description`) VALUES
-(1, 'Thời sự Giảng đường', 'thoi-su-giang-duong', 'Tin tức sự kiện đời sống sinh viên và trường học'),
-(2, 'Phóng sự & Điều tra', 'phong-su-dieu-tra', 'Các tuyến bài điều tra, ghi chép chuyên sâu'),
-(3, 'Góc nhìn & Bình luận', 'goc-nhin-binh-luan', 'Ý kiến đa chiều, góc nhìn của giới trẻ về các vấn đề xã hội'),
-(4, 'Văn hóa & Đời sống', 'van-hoa-doi-song', 'Nghệ thuật, điện ảnh, sách và phong cách sống sinh viên'),
-(5, 'Công nghệ & Khởi nghiệp', 'cong-nghe-khoi-nghiep', 'Xu hướng AI, công nghệ mới và dự án khởi nghiệp trẻ');
+-- 2. Hệ thống chuyên mục và bài viết: Để trống để Quản trị viên tự khởi tạo qua CMS
+-- ====================================================================
 
--- 3. Bài viết mẫu dạng Phóng sự chuyên sâu (Longform) thuộc Tuyến bài
-INSERT INTO `posts` (`title`, `slug`, `sapo`, `content`, `thumbnail_url`, `thumbnail_credit`, `byline`, `post_format`, `reading_time`, `series_name`, `series_order`, `is_spotlight`, `status`, `author_id`, `category_id`, `published_at`) VALUES
-('Chuyện nghề làm báo thời trí tuệ nhân tạo: Khi ngòi bút đối thoại cùng thuật toán', 
- 'chuyen-nghe-lam-bao-thoi-tri-tue-nhan-tao', 
- 'Giữa làn sóng bùng nổ của các mô hình ngôn ngữ lớn, những người làm báo trẻ tại giảng đường đang đứng trước bước ngoặt: Tận dụng công nghệ để khai phóng sức sáng tạo hay để AI lấn át bản sắc báo chí?', 
- '<p class="lead font-medium">Báo chí không đơn thuần là truyền tải sự thật, mà là truyền tải sự thật qua lăng kính trắc ẩn của con người. Đó là thứ mà không dòng mã lệnh nào có thể thay thế được.</p><p>Tại các tòa soạn hiện đại, sự xuất hiện của các công cụ hỗ trợ thông minh đã rút ngắn thời gian xử lý dữ liệu từ hàng giờ xuống vài giây. Tuy nhiên, linh hồn của một tác phẩm báo chí vẫn nằm ở những bước chân đi thực địa, những cuộc phỏng vấn đối mặt và cảm xúc chân thật từ hiện trường.</p>', 
- 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200', 
- 'Ảnh: Getty Images / Báo chí Số', 
- 'Hải Đăng (Khoa Báo chí)', 
- 'LONGFORM', 
- 5, 
- 'Báo chí và Công nghệ Tương lai',
- 1,
- 1, 
- 'PUBLISHED', 
- 4, 
- 2, 
- NOW());
-
--- 4. Khảo sát nhanh đi kèm bài viết (Interactive Quick Poll)
-INSERT INTO `polls` (`id`, `post_id`, `question`, `is_active`) VALUES
-(1, 1, 'Theo bạn, sinh viên báo chí có nên sử dụng AI khi viết bài phóng sự thực tế?', 1);
-
-INSERT INTO `poll_options` (`poll_id`, `option_text`, `votes_count`) VALUES
-(1, 'Nên dùng như công cụ hỗ trợ tra cứu và gợi ý', 42),
-(1, 'Không nên dùng, phóng viên phải tự viết 100%', 18),
-(1, 'Cần có quy định liêm chính rõ ràng từ khoa/nhà trường', 35);
-
--- 5. Banner quảng cáo văn minh (Native Ads)
+-- 3. Banner quảng cáo văn minh (Native Ads)
 INSERT INTO `advertisements` (`title`, `image_url`, `target_url`, `position`, `is_active`) VALUES
 ('Chào mừng tân sinh viên K22 - Khoa Báo chí & Truyền thông', 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200', 'https://tuyensinh.edu.vn', 'HOME_TOP', 1),
 ('Tuyển dụng Cộng tác viên Tạp chí Sinh viên Mùa Thu 2026', 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=600', 'https://newsportal.com/recruitment', 'HOME_SIDEBAR', 1);

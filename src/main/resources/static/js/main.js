@@ -138,39 +138,28 @@ async function initCategoriesNav() {
 
   try {
     let categories = await ApiService.getCategories();
-    if (!categories || categories.length === 0) {
-      // Fallback danh mục mặc định tiêu chuẩn để Navbar luôn luôn hiển thị
-      categories = [
-        { id: 1, name: "Thời sự", slug: "thoi-su" },
-        { id: 2, name: "Công nghệ", slug: "cong-nghe" },
-        { id: 3, name: "Kinh doanh", slug: "kinh-doanh" },
-        { id: 4, name: "Giải trí", slug: "giai-tri" },
-        { id: 5, name: "AI & Blockchain", slug: "ai-blockchain" },
-        { id: 6, name: "Meme", slug: "meme" }
-      ];
-    }
+    categories = Array.isArray(categories) ? categories : [];
     const isEn = (localStorage.getItem('newsportal_lang') === 'en' || (document.cookie && document.cookie.includes('googtrans=/vi/en')));
     const homeLabel = isEn ? 'HOME' : 'Trang Chủ';
 
-    if (categories && categories.length > 0) {
-      if (container) {
-        const homeActive = isHomePage && !currentCategorySlug
+    if (container) {
+      const homeActive = isHomePage && !currentCategorySlug
+        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1'
+        : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
+
+      const homeLinkHtml = `<a href="index.html" data-i18n="nav.home" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${homeActive}">${homeLabel}</a>`;
+
+      const categoryLinksHtml = categories.map(cat => {
+        const isActive = (currentCategorySlug && (currentCategorySlug === cat.slug || currentCategorySlug == cat.id));
+        const activeClasses = isActive
           ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1'
           : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
+        const catLabel = isEn ? (CATEGORY_MAP_EN[cat.slug] || cat.name) : cat.name;
+        return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${activeClasses}">${catLabel}</a>`;
+      }).join('');
 
-        const homeLinkHtml = `<a href="index.html" data-i18n="nav.home" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${homeActive}">${homeLabel}</a>`;
-
-        const categoryLinksHtml = categories.map(cat => {
-          const isActive = (currentCategorySlug && (currentCategorySlug === cat.slug || currentCategorySlug == cat.id));
-          const activeClasses = isActive
-            ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1'
-            : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
-          const catLabel = isEn ? (CATEGORY_MAP_EN[cat.slug] || cat.name) : cat.name;
-          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${activeClasses}">${catLabel}</a>`;
-        }).join('');
-
-        container.innerHTML = homeLinkHtml + categoryLinksHtml;
-      }
+      container.innerHTML = homeLinkHtml + categoryLinksHtml;
+    }
 
       if (mobileContainer) {
         const homeStyle = isHomePage && !currentCategorySlug ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100';
@@ -197,7 +186,6 @@ async function initCategoriesNav() {
       }
 
       triggerDynamicContentReady();
-    }
   } catch (err) {
     console.error("Lỗi nạp danh mục:", err);
   }
