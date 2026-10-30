@@ -91,14 +91,7 @@ function renderHeaderAuth() {
         </div>
         <span class="user-name-text text-xs font-semibold max-w-[120px] truncate">${user.fullName || user.username}</span>
       </a>
-      <button onclick="logoutUser()" class="logout-btn p-1 transition-colors ml-0.5 rounded-full flex items-center justify-center cursor-pointer" title="Đăng xuất">
-        <svg class="logout-icon-svg w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M7.4 7.4L2.8 12l4.6 4.6 1.4-1.4-2.2-2.2H14v-2H6.6l2.2-2.2z"/>
-          <path d="M7 4h8c1.1 0 2 .9 2 2v1h-2V6H7v2.5H5V6c0-1.1.9-2 2-2z"/>
-          <path d="M7 20h8c1.1 0 2-.9 2-2v-1h-2v1H7v-2.5H5V18c0 1.1.9 2 2 2z"/>
-          <polygon points="15,3 21.5,5.5 21.5,18.5 15,21"/>
-        </svg>
-      </button>
+
     </div>
   `;
 }
