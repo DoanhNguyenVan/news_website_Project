@@ -27,7 +27,7 @@
         <!-- Theme Toggle -->
         <button id="theme-toggle-btn" class="hover:text-white transition flex items-center gap-1.5" title="Đổi giao diện Sáng / Tối">
           <svg class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <span class="hidden sm:inline">Chế độ tối</span>
+          <span class="hidden sm:inline" data-i18n="theme.dark">Chế độ tối</span>
         </button>
         <!-- Auth Container (login/profile) -->
         <div id="header-auth-container"></div>
@@ -72,7 +72,7 @@
           
           <!-- Search Bar -->
           <form action="search.html" method="GET" class="hidden md:flex items-center relative shrink-0 ml-4">
-            <input type="text" id="search-input" name="q" placeholder="Tìm kiếm bài viết..." autocomplete="off" class="w-44 lg:w-64 pl-3 pr-8 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-md focus:bg-white focus:border-slate-800 focus:outline-none transition">
+            <input type="text" id="search-input" name="q" placeholder="Tìm kiếm bài viết..." data-i18n-ph="search.placeholder" autocomplete="off" class="w-44 lg:w-64 pl-3 pr-8 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-md focus:bg-white focus:border-slate-800 focus:outline-none transition">
             <button type="submit" class="absolute right-2 text-slate-400 hover:text-slate-800" aria-label="Tìm kiếm">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
@@ -132,9 +132,9 @@
       <div class="flex items-center justify-between pb-2 border-b-2 border-slate-900 dark:border-slate-700 mb-5">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
-          <h2 class="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">TIN TIÊU ĐIỂM SPOTLIGHT</h2>
+          <h2 class="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest" data-i18n="spotlight.badge">TIN TIÊU ĐIỂM SPOTLIGHT</h2>
         </div>
-        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline-block">Special Editorial Edition</span>
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline-block" data-i18n="spotlight.sub">Special Editorial Edition</span>
       </div>
 
       <div id="spotlight-container" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
