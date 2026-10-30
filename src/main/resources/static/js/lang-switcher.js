@@ -4,7 +4,10 @@
  * 
  * - Single Source of Truth: Đồng bộ 100% giữa Cookie dịch thuật và Trạng thái Nút (Pill).
  * - Chuyển sang VI: Dọn sạch triệt để mọi cookie dịch thuật và tải lại trang gốc nguyên bản 100%.
- * - Chuyển sang EN: Kích hoạt dịch tự động toàn diện (bài viết, chuyên mục, nút bấm, dashboard).
+ * - Chuyển sang EN:
+ *     + UI tĩnh & Chuyên mục đổi sang tiếng Anh tức thì 0ms (CATEGORY_MAP).
+ *     + Tự động kích hoạt Google Translate sau khi API nạp xong bài viết (onDynamicContentReady),
+ *       đảm bảo Tiêu đề, Sapo, Nội dung bài báo được dịch chuẩn xác 100% giống trang Admin.
  * - Triệt tiêu 100% thanh iframe banner Google Translate, không gây tụt lề body (0px top).
  * =========================================================================================
  */
@@ -25,6 +28,26 @@
   }
 
   let currentLang = getEffectiveLang();
+
+  // Từ điển chuyên mục chuẩn quốc tế cho báo chí
+  const CATEGORY_MAP = {
+    "thoi-su": "Current Affairs",
+    "thoi-su-giang-duong": "Campus News",
+    "phong-su-dieu-tra": "Investigative",
+    "goc-nhin-binh-luan": "Perspectives",
+    "van-hoa-doi-song": "Culture & Life",
+    "cong-nghe-khoi-nghiep": "Tech & Startups",
+    "the-gioi": "World",
+    "kinh-doanh": "Business",
+    "cong-nghe": "Technology",
+    "the-thao": "Sports",
+    "giai-tri": "Entertainment",
+    "suc-khoe": "Health",
+    "giao-duc": "Education",
+    "phap-luat": "Law & Justice",
+    "ai-blockchain": "AI & Blockchain",
+    "meme": "Humor & Meme"
+  };
 
   // 2. Chèn CSS điều khiển giao diện pill & triệt tiêu banner Google Translate
   const style = document.createElement('style');
@@ -167,12 +190,80 @@
     });
   }
 
-  // 6. Hàm chuyển đổi ngôn ngữ toàn cục
+  // Áp dụng tiếng Anh tức thì 0ms cho các thành phần UI tĩnh & Chuyên mục
+  function applyInstantEnglishUI() {
+    // 1. Chuyên mục trên Navbar, Drawer, Footer, và các thẻ tag bài viết
+    document.querySelectorAll('[data-category-slug]').forEach(el => {
+      const slug = el.getAttribute('data-category-slug');
+      if (CATEGORY_MAP[slug]) {
+        el.textContent = CATEGORY_MAP[slug].toUpperCase();
+      }
+    });
+
+    // 2. Link Trang chủ
+    document.querySelectorAll('[data-i18n="nav.home"], a[href="index.html"]').forEach(el => {
+      const text = el.textContent.trim().toLowerCase();
+      if (text === 'trang chủ') {
+        el.textContent = 'HOME';
+      }
+    });
+
+    // 3. Slogan tòa soạn
+    const slogan = document.querySelector('[data-i18n="header.slogan"]');
+    if (slogan) {
+      slogan.textContent = 'Independent • Objective • Multidimensional Information';
+    }
+
+    // 4. Nút thao tác bài viết
+    const bookmarkText = document.getElementById('bookmark-text');
+    if (bookmarkText) {
+      const isSaved = bookmarkText.textContent.includes('Đã') || bookmarkText.textContent.includes('Saved');
+      bookmarkText.textContent = isSaved ? 'Saved' : 'Save';
+    }
+
+    const copyBtn = document.getElementById('copy-link-btn');
+    if (copyBtn) {
+      const span = copyBtn.querySelector('span');
+      if (span && span.textContent.includes('Sao chép')) span.textContent = 'Copy';
+    }
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.placeholder = 'Search articles (Press Enter)...';
+  }
+
+  // 6. Kích hoạt quét dịch Google Translate
+  function triggerGoogleTranslate() {
+    if (!document.getElementById('gt-element-script')) {
+      loadGoogleTranslateScript();
+      return;
+    }
+
+    const combo = document.querySelector('.goog-te-combo');
+    if (combo) {
+      // Đặt về rỗng rồi chuyển sang 'en' để Google Translate luôn quét lại các bài viết mới nạp
+      combo.value = '';
+      combo.dispatchEvent(new Event('change'));
+      setTimeout(() => {
+        combo.value = 'en';
+        combo.dispatchEvent(new Event('change'));
+        enforceZeroBodyTop();
+      }, 60);
+    }
+  }
+
+  // Hook nhận diện khi REST API nạp bài viết / danh mục mới vào DOM (Đọc báo công khai)
+  window.onDynamicContentReady = function() {
+    if (getEffectiveLang() === 'en') {
+      applyInstantEnglishUI();
+      setTimeout(triggerGoogleTranslate, 100);
+    }
+  };
+
+  // 7. Hàm chuyển đổi ngôn ngữ toàn cục
   window.switchNewsPortalLang = function(targetLang) {
     const hostname = window.location.hostname;
 
     if (targetLang === 'vi') {
-      // Lưu lựa chọn
       localStorage.setItem('newsportal_lang', 'vi');
       currentLang = 'vi';
       updatePillButtons('vi');
@@ -205,20 +296,18 @@
         document.cookie = `googtrans=/vi/en; path=/; domain=.${hostname};`;
       }
 
-      // Kích hoạt combo nếu đã tải xong
+      applyInstantEnglishUI();
+
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
-        combo.value = 'en';
-        combo.dispatchEvent(new Event('change'));
-        enforceZeroBodyTop();
+        triggerGoogleTranslate();
       } else {
-        // Tải lại trang để Google Translate script tự động dịch theo cookie
         window.location.reload();
       }
     }
   };
 
-  // 7. Khởi tạo Google Translate Element
+  // 8. Khởi tạo Google Translate Element
   window.googleTranslateElementInit = function() {
     try {
       new window.google.translate.TranslateElement({
@@ -244,7 +333,7 @@
     }
   };
 
-  // 8. Tải script Google Translate nếu đang ở chế độ Tiếng Anh
+  // 9. Tải script Google Translate nếu đang ở chế độ Tiếng Anh
   function loadGoogleTranslateScript() {
     if (document.getElementById('gt-element-script')) return;
     const gtScript = document.createElement('script');
@@ -254,7 +343,7 @@
     document.head.appendChild(gtScript);
   }
 
-  // 9. Sinh HTML cho Language Pill Widget
+  // 10. Sinh HTML cho Language Pill Widget
   function createPillElement(isLightVariant = false) {
     const pill = document.createElement('div');
     pill.className = `np-lang-pill ${isLightVariant ? 'np-lang-pill-light' : ''} notranslate`;
@@ -271,18 +360,26 @@
     return pill;
   }
 
-  // 10. Tự động chèn nút vào Header khi DOM sẵn sàng
+  // 11. Tự động chèn nút vào Header khi DOM sẵn sàng
   function mountLanguageSwitcher() {
-    // Luôn tính lại ngôn ngữ thực tế
     currentLang = getEffectiveLang();
 
     if (currentLang === 'vi') {
-      // Đảm bảo không còn cookie dịch thừa
       const past = 'Thu, 01 Jan 1970 00:00:00 UTC';
       document.cookie = `googtrans=; expires=${past}; path=/;`;
     } else {
-      // Nếu đang ở EN, nạp script Google Translate
-      loadGoogleTranslateScript();
+      // Chế độ EN:
+      applyInstantEnglishUI();
+
+      if (document.getElementById('admin-sidebar') || document.getElementById('stat-total-views')) {
+        // Trang Admin: Nội dung tĩnh có sẵn, nạp script ngay lập tức
+        loadGoogleTranslateScript();
+      } else {
+        // Trang đọc báo công khai: nạp script và dự phòng quét dịch sau khi bài viết nạp xong
+        setTimeout(() => {
+          triggerGoogleTranslate();
+        }, 500);
+      }
     }
 
     // A. Header công khai (trước nút Theme Toggle)

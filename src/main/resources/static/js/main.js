@@ -56,6 +56,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+const CATEGORY_MAP_EN = {
+  "thoi-su": "Current Affairs",
+  "thoi-su-giang-duong": "Campus News",
+  "phong-su-dieu-tra": "Investigative",
+  "goc-nhin-binh-luan": "Perspectives",
+  "van-hoa-doi-song": "Culture & Life",
+  "cong-nghe-khoi-nghiep": "Tech & Startups",
+  "the-gioi": "World",
+  "kinh-doanh": "Business",
+  "cong-nghe": "Technology",
+  "the-thao": "Sports",
+  "giai-tri": "Entertainment",
+  "suc-khoe": "Health",
+  "giao-duc": "Education",
+  "phap-luat": "Law & Justice",
+  "ai-blockchain": "AI & Blockchain",
+  "meme": "Humor & Meme"
+};
+
+function triggerDynamicContentReady() {
+  if (window.onDynamicContentReady) {
+    window.onDynamicContentReady();
+  }
+}
+
 /* HELPER: DATE FORMATTER */
 function formatDate(dateStr) {
   if (!dateStr) return 'Mới đăng';
@@ -124,20 +149,24 @@ async function initCategoriesNav() {
         { id: 6, name: "Meme", slug: "meme" }
       ];
     }
+    const isEn = (localStorage.getItem('newsportal_lang') === 'en' || (document.cookie && document.cookie.includes('googtrans=/vi/en')));
+    const homeLabel = isEn ? 'HOME' : 'Trang Chủ';
+
     if (categories && categories.length > 0) {
       if (container) {
         const homeActive = isHomePage && !currentCategorySlug
           ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1'
           : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
 
-        const homeLinkHtml = `<a href="index.html" data-i18n="nav.home" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${homeActive}">Trang Chủ</a>`;
+        const homeLinkHtml = `<a href="index.html" data-i18n="nav.home" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${homeActive}">${homeLabel}</a>`;
 
         const categoryLinksHtml = categories.map(cat => {
           const isActive = (currentCategorySlug && (currentCategorySlug === cat.slug || currentCategorySlug == cat.id));
-          const activeClasses = isActive 
-            ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1' 
+          const activeClasses = isActive
+            ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-black pb-1'
             : 'text-slate-700 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition opacity-90 hover:opacity-100';
-          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${activeClasses}">${cat.name}</a>`;
+          const catLabel = isEn ? (CATEGORY_MAP_EN[cat.slug] || cat.name) : cat.name;
+          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-2.5 sm:px-3 py-1 text-xs uppercase tracking-wider whitespace-nowrap shrink-0 ${activeClasses}">${catLabel}</a>`;
         }).join('');
 
         container.innerHTML = homeLinkHtml + categoryLinksHtml;
@@ -145,12 +174,13 @@ async function initCategoriesNav() {
 
       if (mobileContainer) {
         const homeStyle = isHomePage && !currentCategorySlug ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100';
-        const mobileHomeHtml = `<a href="index.html" data-i18n="nav.home" class="px-3 py-2 rounded-lg text-sm font-medium ${homeStyle}">Trang Chủ</a>`;
+        const mobileHomeHtml = `<a href="index.html" data-i18n="nav.home" class="px-3 py-2 rounded-lg text-sm font-medium ${homeStyle}">${homeLabel}</a>`;
 
         const mobileCategoryHtml = categories.map(cat => {
           const isActive = (currentCategorySlug && (currentCategorySlug === cat.slug || currentCategorySlug == cat.id));
           const activeStyle = isActive ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100';
-          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-3 py-2 rounded-lg text-sm font-medium ${activeStyle}">${cat.name}</a>`;
+          const catLabel = isEn ? (CATEGORY_MAP_EN[cat.slug] || cat.name) : cat.name;
+          return `<a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="px-3 py-2 rounded-lg text-sm font-medium ${activeStyle}">${catLabel}</a>`;
         }).join('');
 
         mobileContainer.innerHTML = mobileHomeHtml + mobileCategoryHtml;
@@ -158,15 +188,15 @@ async function initCategoriesNav() {
 
       if (footerContainer) {
         footerContainer.innerHTML = `
-          <li><a href="index.html" data-i18n="nav.home" class="hover:text-white transition">Trang chủ</a></li>
-          ${categories.slice(0, 5).map(cat => `<li><a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="hover:text-white transition">${cat.name}</a></li>`).join('')}
+          <li><a href="index.html" data-i18n="nav.home" class="hover:text-white transition">${isEn ? 'Home' : 'Trang chủ'}</a></li>
+          ${categories.slice(0, 5).map(cat => {
+          const catLabel = isEn ? (CATEGORY_MAP_EN[cat.slug] || cat.name) : cat.name;
+          return `<li><a href="category.html?slug=${cat.slug}&id=${cat.id}" data-category-slug="${cat.slug}" class="hover:text-white transition">${catLabel}</a></li>`;
+        }).join('')}
         `;
       }
-      
-      // Thông báo cập nhật ngôn ngữ cho danh mục mới render
-      if (window.notifyDynamicContentUpdated) {
-        window.notifyDynamicContentUpdated();
-      }
+
+      triggerDynamicContentReady();
     }
   } catch (err) {
     console.error("Lỗi nạp danh mục:", err);
@@ -221,6 +251,7 @@ async function initHomePage() {
     renderLatestFeed(latestList);
     renderFeaturedCategories(categories, latestList);
     renderTrending(trendingList);
+    triggerDynamicContentReady();
   } catch (err) {
     console.error("Lỗi nạp dữ liệu trang chủ:", err);
   }
@@ -743,7 +774,7 @@ async function initCategoryPage() {
     // Nạp thêm tin nổi bật / đọc nhiều nhất ở sidebar
     const homepageData = await ApiService.getHomepageNews();
     renderTrending(homepageData.trending || []);
-
+    triggerDynamicContentReady();
   } catch (err) {
     console.error("Lỗi nạp bài viết chuyên mục:", err);
     renderLatestFeed([], `Lỗi nạp danh sách bài viết chuyên mục.`);
@@ -775,6 +806,7 @@ async function initSearchPage() {
       summaryEl.innerHTML = `Tìm thấy <strong class="text-blue-600 dark:text-blue-400">${posts.length}</strong> kết quả phù hợp với từ khóa: <strong class="text-slate-900 dark:text-slate-100">"${query}"</strong>`;
     }
     renderLatestFeed(posts, `Không tìm thấy bài viết nào phù hợp với từ khóa "${query}". Vui lòng thử lại với từ khóa khác.`);
+    triggerDynamicContentReady();
   } catch (err) {
     console.error("Lỗi tìm kiếm bài viết:", err);
     if (summaryEl) summaryEl.innerHTML = `Không thể thực hiện tìm kiếm bài viết lúc này.`;
@@ -860,24 +892,30 @@ async function initArticleDetailPage() {
     window.currentPostId = post.id;
     currentCategorySlug = post.categorySlug;
 
-    document.getElementById('article-breadcrumb-category').innerText = post.categoryName || 'Tin tức';
+    const isEn = (localStorage.getItem('newsportal_lang') === 'en' || (document.cookie && document.cookie.includes('googtrans=/vi/en')));
+    const catName = isEn ? (CATEGORY_MAP_EN[post.categorySlug] || post.categoryName || 'News') : (post.categoryName || 'Tin tức');
+    const breadcrumbEl = document.getElementById('article-breadcrumb-category');
+    if (breadcrumbEl) {
+      breadcrumbEl.innerText = catName;
+      breadcrumbEl.setAttribute('data-category-slug', post.categorySlug || '');
+    }
     document.getElementById('article-title').innerText = post.title;
     document.getElementById('article-sapo').innerText = post.sapo || '';
-    
+
     // Byline / Bút danh phóng viên
     const bylineStr = post.byline ? `${post.byline} ${post.authorName ? '(@' + post.authorName + ')' : ''}` : (post.authorName || 'Tòa soạn');
     document.getElementById('article-author').innerText = bylineStr;
     document.getElementById('article-date').innerText = formatDate(post.publishedAt);
-    
+
     const viewsEl = document.getElementById('article-views');
     if (viewsEl) {
-      viewsEl.innerHTML = `${EYE_ICON_SVG} <span>${post.viewsCount || 0} lượt xem</span>`;
+      viewsEl.innerHTML = `${EYE_ICON_SVG} <span>${post.viewsCount || 0} ${isEn ? 'views' : 'lượt xem'}</span>`;
     }
 
     // Thời gian đọc
     const readingTimeEl = document.getElementById('article-reading-time');
     if (readingTimeEl) {
-      readingTimeEl.innerText = post.readingTime ? `${post.readingTime} phút đọc` : calculateReadingTime((post.sapo || '') + ' ' + (post.content || ''));
+      readingTimeEl.innerText = post.readingTime ? `${post.readingTime} ${isEn ? 'min read' : 'phút đọc'}` : calculateReadingTime((post.sapo || '') + ' ' + (post.content || ''));
     }
 
     // Lead Photo & Bản quyền ảnh
@@ -891,7 +929,7 @@ async function initArticleDetailPage() {
       }
       leadFigure.classList.remove('hidden');
     }
-    
+
     // Clean HTML Content: loại bỏ contenteditable & class editor admin để đảm bảo Read-Only 100%
     const cleanContainer = document.createElement('div');
     cleanContainer.innerHTML = post.content || '';
@@ -920,9 +958,7 @@ async function initArticleDetailPage() {
     loadArticleComments(currentArticlePostId);
 
     // Kích hoạt dịch tự động cho nội dung bài viết mới nạp vào DOM nếu đang ở chế độ EN
-    if (window.notifyDynamicContentUpdated) {
-      window.notifyDynamicContentUpdated();
-    }
+    triggerDynamicContentReady();
   } catch (err) {
     console.error("Lỗi nạp bài viết:", err);
   }
@@ -946,7 +982,7 @@ function renderArticleCommentSection(post) {
   const userStr = localStorage.getItem('user');
   let user = null;
   if (userStr) {
-    try { user = JSON.parse(userStr); } catch (e) {}
+    try { user = JSON.parse(userStr); } catch (e) { }
   }
 
   // Trường hợp 1: KHÁCH TRUY CẬP (GUEST / Chưa đăng nhập)
@@ -1073,7 +1109,7 @@ async function handleCommentSubmit(e) {
   }
 }
 
-window.handleCommentLoginClick = function() {
+window.handleCommentLoginClick = function () {
   if (typeof openAuthModal === 'function') {
     openAuthModal('login');
   } else {
@@ -1081,7 +1117,7 @@ window.handleCommentLoginClick = function() {
   }
 };
 
-window.handleCommentRegisterClick = function() {
+window.handleCommentRegisterClick = function () {
   if (typeof openAuthModal === 'function') {
     openAuthModal('register');
   } else {
@@ -1169,7 +1205,7 @@ async function loadArticleComments(postId) {
 
   try {
     const comments = await ApiService.getPostComments(postId);
-    
+
     // Đếm tổng số lượng cả root và replies
     let totalCount = 0;
     if (comments && Array.isArray(comments)) {
@@ -1207,7 +1243,7 @@ function renderCommentCard(c, isReply = false) {
   const timeStr = formatRelativeTime(c.createdAt);
 
   const hasReplies = c.replies && Array.isArray(c.replies) && c.replies.length > 0;
-  const repliesHtml = hasReplies 
+  const repliesHtml = hasReplies
     ? `<div class="mt-3 pl-4 border-l-2 border-slate-200 space-y-3">${c.replies.map(r => renderCommentCard(r, true)).join('')}</div>`
     : '';
 
@@ -1248,12 +1284,12 @@ function renderCommentCard(c, isReply = false) {
   `;
 }
 
-window.toggleReplyBox = function(parentId, authorName) {
+window.toggleReplyBox = function (parentId, authorName) {
   const token = localStorage.getItem('accessToken');
   const userStr = localStorage.getItem('user');
   let user = null;
   if (userStr) {
-    try { user = JSON.parse(userStr); } catch (e) {}
+    try { user = JSON.parse(userStr); } catch (e) { }
   }
 
   if (!token || !user) {
@@ -1307,7 +1343,7 @@ window.toggleReplyBox = function(parentId, authorName) {
   }, 100);
 };
 
-window.submitReplyComment = async function(e, parentId) {
+window.submitReplyComment = async function (e, parentId) {
   e.preventDefault();
   const targetPostId = currentArticlePostId || window.currentPostId;
   if (!targetPostId) {
@@ -1625,9 +1661,9 @@ function renderArticleSeriesBox(post) {
 
       <div class="space-y-2 pt-1 text-xs">
         ${post.seriesPosts.map(sp => {
-          const isCurrent = sp.slug === post.slug;
-          if (isCurrent) {
-            return `
+    const isCurrent = sp.slug === post.slug;
+    if (isCurrent) {
+      return `
               <div class="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 font-semibold border border-blue-500/50 dark:border-blue-400/50 shadow-xs ring-2 ring-blue-500/10">
                 <span class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-mono text-[11px] font-bold shrink-0">Kỳ ${sp.seriesOrder || 1}</span>
                 <span class="flex-1 text-xs sm:text-sm font-semibold line-clamp-1">${sp.title}</span>
@@ -1637,16 +1673,16 @@ function renderArticleSeriesBox(post) {
                 </span>
               </div>
             `;
-          } else {
-            return `
+    } else {
+      return `
               <a href="article-detail.html?slug=${sp.slug}" class="flex items-center gap-3 p-3 rounded-xl bg-white/60 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200/70 dark:border-slate-800 hover:border-blue-200 dark:hover:border-slate-700 transition shadow-2xs group">
                 <span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-950 group-hover:text-blue-600 font-mono text-[11px] font-bold shrink-0 transition">Kỳ ${sp.seriesOrder || 1}</span>
                 <span class="flex-1 text-xs sm:text-sm font-medium line-clamp-1 transition group-hover:underline">${sp.title}</span>
                 <svg class="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
               </a>
             `;
-          }
-        }).join('')}
+    }
+  }).join('')}
       </div>
     </div>
   `;
@@ -1933,7 +1969,7 @@ async function initUserBookmarkCache() {
       const guestBookmarks = JSON.parse(localStorage.getItem('guest_bookmarks') || '[]');
       guestBookmarks.forEach(id => window.userBookmarkedIdsSet.add(Number(id)));
       isBookmarkCacheLoaded = true;
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // Tự động đồng bộ các nút bookmark đã render trên trang
@@ -2111,7 +2147,7 @@ async function renderForYouRecommendations() {
     const prefCats = JSON.parse(localStorage.getItem('user_topic_preferences') || '[]');
     catIds = [...new Set([...prefCats, ...guestCats])];
     excludeIds = JSON.parse(localStorage.getItem('guest_read_posts') || '[]').slice(0, 10);
-  } catch (e) {}
+  } catch (e) { }
 
   try {
     const posts = await ApiService.getForYouRecommendations({
@@ -2307,8 +2343,8 @@ async function loadUserSavedArticles(tab) {
     }
 
     if (!posts || posts.length === 0) {
-      const emptyMsg = tab === 'bookmarks' 
-        ? "Bạn chưa lưu bài viết nào để đọc sau." 
+      const emptyMsg = tab === 'bookmarks'
+        ? "Bạn chưa lưu bài viết nào để đọc sau."
         : "Chưa có lịch sử đọc bài viết nào.";
       container.innerHTML = `<div class="py-12 text-center text-xs text-slate-400 space-y-2">
         <svg class="w-8 h-8 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
