@@ -61,12 +61,7 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- WebP Image Conversion Support -->
-		<dependency>
-			<groupId>org.sejda.imageio</groupId>
-			<artifactId>webp-imageio</artifactId>
-			<version>0.1.6</version>
-		</dependency>
+
 
 		<!-- Database & Runtime Utilities (MySQL) -->
 		<dependency>

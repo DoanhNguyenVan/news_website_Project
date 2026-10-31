@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 public class DocxImportService {
 
     private final MediaRepository mediaRepository;
-    private final WebpConversionService webpConversionService;
     private final CloudinaryService cloudinaryService;
 
     private Path getUploadDir() throws IOException {
@@ -60,23 +59,19 @@ public class DocxImportService {
                 try {
                     String contentType = image.getContentType();
                     String uuid = UUID.randomUUID().toString();
-                    String fileName = "docx_img_" + uuid + ".webp";
+                    String ext = ".jpg";
+                    if (contentType != null && contentType.contains("png")) ext = ".png";
+                    else if (contentType != null && contentType.contains("gif")) ext = ".gif";
+                    else if (contentType != null && contentType.contains("webp")) ext = ".webp";
+
+                    String fileName = "docx_img_" + uuid + ext;
                     Path filePath = uploadDir.resolve(fileName);
 
                     byte[] imageBytes;
                     try (InputStream inputStream = image.getInputStream()) {
                         imageBytes = inputStream.readAllBytes();
                     }
-
-                    boolean converted = webpConversionService.convertToWebp(new java.io.ByteArrayInputStream(imageBytes), filePath);
-
-                    if (!converted || !Files.exists(filePath)) {
-                        String ext = ".jpg";
-                        if (contentType != null && contentType.contains("png")) ext = ".png";
-                        fileName = "docx_img_" + uuid + ext;
-                        filePath = uploadDir.resolve(fileName);
-                        Files.write(filePath, imageBytes);
-                    }
+                    Files.write(filePath, imageBytes);
 
                     String fileUrl = "/uploads/" + fileName;
 
@@ -85,6 +80,7 @@ public class DocxImportService {
                         String cloudUrl = cloudinaryService.uploadImage(filePath.toFile(), "docx_img_" + uuid);
                         if (cloudUrl != null && !cloudUrl.isBlank()) {
                             fileUrl = cloudUrl;
+                            try { Files.deleteIfExists(filePath); } catch (Exception ignored) {}
                         }
                     }
 
