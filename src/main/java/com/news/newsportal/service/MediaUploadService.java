@@ -20,7 +20,6 @@ import java.util.UUID;
 public class MediaUploadService {
 
     private final MediaRepository mediaRepository;
-    private final WebpConversionService webpConversionService;
     private final CloudinaryService cloudinaryService;
 
     private Path getUploadDir() throws IOException {
@@ -42,48 +41,50 @@ public class MediaUploadService {
             throw new IllegalArgumentException("Chỉ cho phép tải lên định dạng hình ảnh hoặc video");
         }
 
-        Path uploadDir = getUploadDir();
         String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "upload";
         String uuid = UUID.randomUUID().toString();
-        String finalFileName;
         String finalContentType = contentType;
-        long finalFileSize;
+        long finalFileSize = file.getSize();
 
-        // Nếu là tệp hình ảnh (jpg, jpeg, png, bmp...) -> Tự động chuyển đổi sang WebP siêu nhẹ
-        if (contentType.startsWith("image/") && !contentType.contains("svg") && !contentType.contains("gif")) {
-            finalFileName = uuid + ".webp";
-            Path webpFilePath = uploadDir.resolve(finalFileName);
+        String fileUrl;
 
-            boolean converted = webpConversionService.convertToWebp(file.getInputStream(), webpFilePath);
-            if (converted && Files.exists(webpFilePath)) {
-                finalContentType = "image/webp";
-                finalFileSize = Files.size(webpFilePath);
-                log.info("Ảnh đã được nén thành công sang WebP: {}", finalFileName);
-            } else {
-                // Fallback nếu chuyển đổi lỗi: Lưu nguyên bản định dạng gốc
-                finalFileName = uuid + "_" + originalFilename;
-                Path originalFilePath = uploadDir.resolve(finalFileName);
-                Files.copy(file.getInputStream(), originalFilePath, StandardCopyOption.REPLACE_EXISTING);
-                finalFileSize = Files.size(originalFilePath);
-            }
-        } else {
-            // Video hoặc ảnh động GIF/SVG: Lưu trực tiếp
-            finalFileName = uuid + "_" + originalFilename;
-            Path originalFilePath = uploadDir.resolve(finalFileName);
-            Files.copy(file.getInputStream(), originalFilePath, StandardCopyOption.REPLACE_EXISTING);
-            finalFileSize = Files.size(originalFilePath);
-        }
+        // Nếu Cloudinary được cấu hình -> Upload ảnh/video gốc trực tiếp lên Cloudinary
+        // Cloudinary sẽ tự tối ưu hóa (f_auto, q_auto) mà không cần chuyển đổi local
+        if (cloudinaryService.isConfigured()) {
+            Path uploadDir = getUploadDir();
+            String ext = originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf('.'))
+                    : "";
+            String tmpFileName = uuid + ext;
+            Path tmpFilePath = uploadDir.resolve(tmpFileName);
+            Files.copy(file.getInputStream(), tmpFilePath, StandardCopyOption.REPLACE_EXISTING);
+            finalFileSize = Files.size(tmpFilePath);
 
-        String fileUrl = "/uploads/" + finalFileName;
-        Path savedFilePath = uploadDir.resolve(finalFileName);
+            String cloudUrl = cloudinaryService.uploadImage(tmpFilePath.toFile(), uuid);
 
-        // Nếu Cloudinary được cấu hình -> Đẩy ảnh lên Cloudinary lưu trữ vĩnh viễn (25GB Free)
-        if (cloudinaryService.isConfigured() && Files.exists(savedFilePath)) {
-            String cloudUrl = cloudinaryService.uploadImage(savedFilePath.toFile(), uuid);
+            // Dọn file tạm sau khi đã upload lên Cloudinary
+            try { Files.deleteIfExists(tmpFilePath); } catch (Exception ignored) {}
+
             if (cloudUrl != null && !cloudUrl.isBlank()) {
                 fileUrl = cloudUrl;
                 log.info("Media được lưu trữ thành công trên Cloudinary: {}", fileUrl);
+            } else {
+                // Cloudinary upload thất bại, fallback lưu local
+                fileUrl = "/uploads/" + tmpFileName;
+                Files.copy(file.getInputStream(), uploadDir.resolve(tmpFileName), StandardCopyOption.REPLACE_EXISTING);
             }
+        } else {
+            // Cloudinary chưa cấu hình -> Lưu file gốc vào thư mục uploads local
+            Path uploadDir = getUploadDir();
+            String ext = originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf('.'))
+                    : "";
+            String localFileName = uuid + ext;
+            Path localFilePath = uploadDir.resolve(localFileName);
+            Files.copy(file.getInputStream(), localFilePath, StandardCopyOption.REPLACE_EXISTING);
+            finalFileSize = Files.size(localFilePath);
+            fileUrl = "/uploads/" + localFileName;
+            log.info("Media được lưu local (Cloudinary chưa cấu hình): {}", fileUrl);
         }
 
         Media media = Media.builder()
