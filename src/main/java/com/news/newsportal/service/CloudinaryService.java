@@ -34,6 +34,8 @@ public class CloudinaryService {
             Map uploadParams = ObjectUtils.asMap(
                     "folder", "newsportal",
                     "resource_type", "image",
+                    "format", "webp",
+                    "quality", "auto",
                     "use_filename", true,
                     "unique_filename", true
             );
