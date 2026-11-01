@@ -25,9 +25,32 @@
         <a href="index.html" class="hover:text-blue-400 transition">← Về trang chủ báo</a>
       </div>
       <div class="flex items-center gap-4">
-        <button id="theme-toggle-btn" class="hover:text-white transition flex items-center gap-1.5" title="Đổi giao diện Sáng / Tối">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-          <span class="hidden sm:inline">Chế độ tối</span>
+        <!-- Theme Toggle Capsule Button -->
+        <button id="theme-toggle-btn" class="theme-capsule-btn" type="button" role="switch" aria-label="Chuyển chế độ Sáng / Tối" title="Chuyển giao diện Sáng / Tối">
+          <span class="theme-capsule-track">
+            <span class="theme-capsule-text text-light">LIGHT</span>
+            <span class="theme-capsule-text text-dark">DARK</span>
+            <span class="theme-capsule-thumb">
+              <!-- Moon Icon (Dark Mode) -->
+              <svg class="capsule-icon capsule-icon-moon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3.5a8.5 8.5 0 1 0 7.8 11.9 7 7 0 0 1-7.8-11.9z"/>
+                <path d="M17 6.5l.6 1.3 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6.6-1.3z"/>
+                <path d="M19.5 11l.4.9.9.4-.9.4-.4.9-.4-.9-.9-.4.9-.4.4-.9z"/>
+              </svg>
+              <!-- Sun Icon (Light Mode) -->
+              <svg class="capsule-icon capsule-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/>
+                <line x1="12" y1="2.5" x2="12" y2="5" stroke-width="2.2"/>
+                <line x1="12" y1="19" x2="12" y2="21.5" stroke-width="2.2"/>
+                <line x1="2.5" y1="12" x2="5" y2="12" stroke-width="2.2"/>
+                <line x1="19" y1="12" x2="21.5" y2="12" stroke-width="2.2"/>
+                <line x1="5.3" y1="5.3" x2="7.1" y2="7.1" stroke-width="2.2"/>
+                <line x1="16.9" y1="7.1" x2="18.7" y2="5.3" stroke-width="2.2"/>
+                <line x1="5.3" y1="18.7" x2="7.1" y2="16.9" stroke-width="2.2"/>
+                <line x1="16.9" y1="16.9" x2="18.7" y2="18.7" stroke-width="2.2"/>
+              </svg>
+            </span>
+          </span>
         </button>
         <div id="header-auth-container"></div>
       </div>

@@ -99,8 +99,11 @@
       border-radius: 9999px;
       padding: 2px;
       gap: 2px;
+      height: 22px;
+      box-sizing: border-box;
       user-select: none;
       transition: all 0.2s ease;
+      vertical-align: middle;
     }
     .np-lang-pill:hover {
       background: rgba(30, 41, 59, 0.95);
@@ -109,17 +112,20 @@
     .np-lang-btn {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 2px 7px;
+      justify-content: center;
+      gap: 3px;
+      padding: 0 6px;
+      height: 16px;
       border-radius: 9999px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       color: #94a3b8 !important;
       background: transparent !important;
       border: none;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      line-height: 1.2;
+      line-height: 1;
+      box-sizing: border-box;
     }
     .np-lang-btn:hover {
       color: #ffffff !important;

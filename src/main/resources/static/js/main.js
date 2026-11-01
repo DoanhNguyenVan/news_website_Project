@@ -223,11 +223,13 @@ function initDarkMode() {
     document.documentElement.classList.remove('dark');
   }
   if (toggleBtn) {
+    toggleBtn.setAttribute('aria-checked', isDark ? 'true' : 'false');
     toggleBtn.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
       document.documentElement.classList.toggle('dark');
       const current = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
       localStorage.setItem('theme', current);
+      toggleBtn.setAttribute('aria-checked', current === 'dark' ? 'true' : 'false');
     });
   }
 }
