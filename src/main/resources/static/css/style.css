@@ -681,7 +681,93 @@ body.dark-mode .article-body table th {
   margin-left: 8px;
 }
 
-.bookmark-animate-unsave {
-  animation: bookmark-unsave-pop 0.32s ease-out both !important;
+/* ========================================================
+ * BACK TO TOP FLOATING BUTTON (Mũi tên tròn cố định góc phải)
+ * ======================================================== */
+.btn-back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 2.5px solid #0f172a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.9);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s,
+              background-color 0.2s,
+              border-color 0.2s,
+              box-shadow 0.2s;
+  outline: none;
+  padding: 0;
 }
+
+.btn-back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.btn-back-to-top:hover {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+
+.btn-back-to-top:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn-back-to-top svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s ease;
+}
+
+.btn-back-to-top:hover svg {
+  transform: translateY(-2px);
+}
+
+/* Hỗ trợ chế độ tối (Dark mode) */
+body.dark-mode .btn-back-to-top {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-mode .btn-back-to-top:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+}
+
+@media (max-width: 640px) {
+  .btn-back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+  }
+  .btn-back-to-top svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+
 

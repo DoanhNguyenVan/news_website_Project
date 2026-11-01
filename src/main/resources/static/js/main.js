@@ -40,6 +40,7 @@ function getBookmarkBtnHtml(postId, extraClass = 'absolute top-3 right-3 z-10') 
 
 document.addEventListener('DOMContentLoaded', () => {
   initDarkMode();
+  initBackToTopButton();
   initCategoriesNav();
   initLiveSearchAutocomplete();
 
@@ -126,6 +127,50 @@ function initDarkMode() {
       localStorage.setItem('theme', current);
     });
   }
+}
+
+/* ========================================================
+ * BACK TO TOP FLOATING BUTTON (Mũi tên tròn quay về đầu trang)
+ * ======================================================== */
+function initBackToTopButton() {
+  if (document.getElementById('btn-back-to-top')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'btn-back-to-top';
+  btn.className = 'btn-back-to-top notranslate';
+  btn.setAttribute('aria-label', 'Về đầu trang');
+  btn.setAttribute('title', 'Cuộn về đầu trang');
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5"></path>
+      <path d="M5 12l7-7 7 7"></path>
+    </svg>
+  `;
+
+  document.body.appendChild(btn);
+
+  let isTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!isTicking) {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY > 280) {
+          btn.classList.add('is-visible');
+        } else {
+          btn.classList.remove('is-visible');
+        }
+        isTicking = false;
+      });
+      isTicking = true;
+    }
+  }, { passive: true });
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
 }
 
 /* MOBILE DRAWER TOGGLE */
