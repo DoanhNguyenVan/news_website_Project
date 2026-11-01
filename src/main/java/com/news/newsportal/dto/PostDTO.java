@@ -31,6 +31,8 @@ public class PostDTO {
     private Boolean isTrending;
     private Boolean allowComments;
     private Long viewsCount;
+    @Builder.Default
+    private Long commentsCount = 0L;
     private String status;
     private String rejectionReason;
     private String categoryName;

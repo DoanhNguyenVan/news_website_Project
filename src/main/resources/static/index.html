@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The News Portal — Báo Chí & Tin Tức Đa Phương Tiện</title>
   <meta name="description" content="Trang tin tức báo chí điện tử tốc độ cao, cập nhật thông tin thời sự, công nghệ, kinh doanh 24/7.">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="shortcut icon" href="/favicon.ico">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,10 +59,21 @@
           </a>
 
           <!-- Mobile Search Toggle -->
-          <a href="search.html" class="md:hidden p-2 text-slate-700 hover:text-slate-900" aria-label="Tìm kiếm">
+          <button type="button" onclick="toggleMobileSearch()" id="mobile-search-toggle-btn" class="md:hidden p-2 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer" aria-label="Tìm kiếm">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </a>
+          </button>
         </div>
+      </div>
+
+      <!-- MOBILE INLINE SEARCH BAR (Hiện ra ngay trên các chuyên mục khi bấm tìm kiếm trên mobile) -->
+      <div id="mobile-search-bar" class="hidden md:hidden mt-2 pt-1 transition-all duration-200">
+        <form action="search.html" method="GET" class="relative flex items-center">
+          <input type="text" id="mobile-search-input" name="q" placeholder="Tìm kiếm bài viết..." data-i18n-ph="search.placeholder" autocomplete="off" class="w-full pl-9 pr-9 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-900 focus:border-slate-800 dark:focus:border-blue-500 focus:outline-none transition shadow-2xs">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <button type="button" onclick="toggleMobileSearch(false)" class="absolute right-2.5 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer" title="Đóng tìm kiếm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </form>
       </div>
 
       <!-- CATEGORIES NAVBAR (MOBILE SWIPEABLE & DESKTOP ROW) -->
@@ -143,18 +156,18 @@
     </section>
 
     <!-- PHÂN KHU ĐỀ XUẤT: DÀNH CHO BẠN (PERSONALIZED FOR YOU) -->
-    <section id="for-you-section" class="bg-gradient-to-br from-blue-50/70 via-white to-slate-50 dark:from-slate-900/60 dark:to-slate-800/40 p-5 sm:p-7 rounded-3xl border border-blue-100 dark:border-slate-700 shadow-xs">
-      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-100 dark:border-slate-700 mb-6">
+    <section id="for-you-section" class="bg-blue-50/50 dark:bg-[#032B4E] p-5 sm:p-7 rounded-3xl border border-blue-100 dark:border-[#0a4477] shadow-xs">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-blue-100 dark:border-[#0a4477] mb-6">
         <div class="flex items-center gap-2.5">
           <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-          <h2 class="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+          <h2 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
             <span>DÀNH CHO BẠN (FOR YOU)</span>
-            <span id="for-you-indicator-tag" class="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full lowercase">theo sở thích đọc</span>
+            <span id="for-you-indicator-tag" class="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-[#0a4477] dark:text-sky-300 rounded-full lowercase">theo sở thích đọc</span>
           </h2>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="openTopicPreferencesModal()" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-blue-50 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl border border-slate-200 dark:border-slate-600 shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <button onclick="openTopicPreferencesModal()" class="px-3 py-1.5 bg-white dark:bg-[#0a4477] hover:bg-blue-50 dark:hover:bg-[#0d5494] text-slate-700 dark:text-white font-bold text-xs rounded-xl border border-slate-200 dark:border-[#0a4477] shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-slate-500 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span>Tùy chọn chủ đề</span>
           </button>
           <a href="user.html#bookmarks" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer" title="Xem danh sách bài viết đã lưu">

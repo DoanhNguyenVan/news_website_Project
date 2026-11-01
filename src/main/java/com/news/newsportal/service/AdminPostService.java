@@ -156,6 +156,7 @@ public class AdminPostService {
                 .isTrending(p.getIsTrending())
                 .allowComments(p.getAllowComments())
                 .viewsCount(p.getViewsCount())
+                .commentsCount(commentRepository.countApprovedCommentsByPostId(p.getId()))
                 .publishedAt(p.getPublishedAt())
                 .build());
     }
@@ -220,6 +221,7 @@ public class AdminPostService {
                 .status(post.getStatus().name())
                 .rejectionReason(post.getRejectionReason())
                 .viewsCount(post.getViewsCount())
+                .commentsCount(commentRepository.countApprovedCommentsByPostId(post.getId()))
                 .categoryName(post.getCategory() != null ? post.getCategory().getName() : "")
                 .categorySlug(post.getCategory() != null ? post.getCategory().getSlug() : "")
                 .authorName(post.getAuthor() != null ? (post.getAuthor().getFullName() != null ? post.getAuthor().getFullName() : post.getAuthor().getUsername()) : "")

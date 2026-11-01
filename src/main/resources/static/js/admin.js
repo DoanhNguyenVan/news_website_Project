@@ -151,6 +151,7 @@ async function initAdminDashboard() {
   const nameEl = document.getElementById('header-user-name');
   const emailEl = document.getElementById('header-user-email');
   const badgeEl = document.getElementById('role-badge');
+  const sidebarRoleEl = document.getElementById('sidebar-user-role');
 
   if (avatarEl) {
     const isGoogle = (user.authProvider || '').toUpperCase() === 'GOOGLE';
@@ -162,6 +163,10 @@ async function initAdminDashboard() {
   if (badgeEl) {
     badgeEl.innerText = getRoleTitle(role);
     badgeEl.className = getRoleBadgeClass(role);
+  }
+  if (sidebarRoleEl) {
+    sidebarRoleEl.innerText = getRoleTitle(role);
+    sidebarRoleEl.title = getRoleTitle(role);
   }
 
   // Khởi tạo các nút action theo Role
@@ -209,11 +214,11 @@ function getUserRole() {
 function getRoleTitle(roleStr) {
   const r = (roleStr || '').toUpperCase();
   switch (r) {
-    case 'SUPER_ADMIN': return 'Quản Trị Hệ Thống (SUPER_ADMIN)';
-    case 'EDITOR_IN_CHIEF': return 'Tổng Biên Tập (EDITOR_IN_CHIEF)';
-    case 'EDITOR': return 'Biên Tập Viên (EDITOR)';
-    case 'AUTHOR': return 'Tác Giả / Phóng Viên (AUTHOR)';
-    default: return 'Độc Giả (USER)';
+    case 'SUPER_ADMIN': return 'Quản Trị Hệ Thống';
+    case 'EDITOR_IN_CHIEF': return 'Tổng Biên Tập';
+    case 'EDITOR': return 'Biên Tập Viên';
+    case 'AUTHOR': return 'Tác Giả / Phóng Viên';
+    default: return 'Độc Giả';
   }
 }
 
@@ -917,9 +922,7 @@ function restoreVersionHistory(index) {
  * 7. JOURNALISTIC TOOLBAR HELPER EMBEDS
  * ======================================================== */
 function autoExpandSapo(textarea) {
-  if (!textarea) return;
-  textarea.style.height = 'auto';
-  textarea.style.height = `${textarea.scrollHeight}px`;
+  // Không ép mở rộng chiều cao vô tận để giữ vùng cuộn độc lập cho Sapo
 }
 
 let postTagsList = [];

@@ -9,6 +9,7 @@ import com.news.newsportal.exception.ResourceNotFoundException;
 import com.news.newsportal.repository.CommentRepository;
 import com.news.newsportal.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -144,11 +145,13 @@ public class NewsService {
     }
 
     @Transactional
+    @CacheEvict(value = "homepage_news", allEntries = true)
     public CommentDTO addComment(CommentDTO dto) {
         return commentService.addComment(dto);
     }
 
     @Transactional
+    @CacheEvict(value = "homepage_news", allEntries = true)
     public CommentDTO addComment(CommentDTO dto, String username) {
         return commentService.addComment(dto, username);
     }
@@ -158,6 +161,16 @@ public class NewsService {
     }
 
     public PostDTO convertToDTO(Post post) {
+        Long commentsCount = 0L;
+        if (post != null && post.getId() != null) {
+            try {
+                Long cnt = commentRepository.countApprovedCommentsByPostId(post.getId());
+                commentsCount = cnt != null ? cnt : 0L;
+            } catch (Exception ignored) {
+                commentsCount = 0L;
+            }
+        }
+
         return PostDTO.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -178,6 +191,7 @@ public class NewsService {
                 .isTrending(post.getIsTrending())
                 .allowComments(post.getAllowComments())
                 .viewsCount(post.getViewsCount())
+                .commentsCount(commentsCount)
                 .status(post.getStatus().name())
                 .categoryName(post.getCategory() != null ? post.getCategory().getName() : "")
                 .categorySlug(post.getCategory() != null ? post.getCategory().getSlug() : "")

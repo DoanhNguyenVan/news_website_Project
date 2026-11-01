@@ -79,26 +79,233 @@ body {
 }
 
 /* Dark Mode Overrides & High Contrast Rules */
-body.dark-mode {
+body.dark-mode,
+html.dark {
   background-color: #0b0f19;
   color: #f3f4f6;
 }
 
-body.dark-mode .bg-white {
+body.dark-mode .bg-white,
+html.dark .bg-white {
   background-color: #111827 !important;
   color: #f3f4f6 !important;
 }
 
+/* ========================================================
+ * DARK MODE TOP MASTHEAD HEADER & FOOTER NAVY THEME (#032B4E - Đồng bộ logo)
+ * Chỉ áp dụng cho thanh Header Masthead trên cùng và Footer.
+ * Tuyệt đối không áp dụng cho Header của bài viết (article header).
+ * ======================================================== */
+body.dark-mode header.site-masthead,
+html.dark header.site-masthead,
+body.dark-mode header.sticky,
+html.dark header.sticky,
+body.dark-mode header:not(main header),
+html.dark header:not(main header) {
+  background-color: #032B4E !important;
+  border-bottom-color: #0a4477 !important;
+}
+
+/* Reset article header inside main to transparent (đồng bộ với nền trang / bài viết) */
+body.dark-mode main header,
+html.dark main header,
+body.dark-mode header.article-header,
+html.dark header.article-header {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Top Masthead Header borders & dividers */
+body.dark-mode header.site-masthead .border-slate-900,
+html.dark header.site-masthead .border-slate-900,
+body.dark-mode header.site-masthead .border-slate-200,
+html.dark header.site-masthead .border-slate-200,
+body.dark-mode header:not(main header) .border-slate-900,
+html.dark header:not(main header) .border-slate-900,
+body.dark-mode header:not(main header) .border-slate-200,
+html.dark header:not(main header) .border-slate-200,
+body.dark-mode header:not(main header) .border-b,
+html.dark header:not(main header) .border-b,
+body.dark-mode header:not(main header) .border-t-2,
+html.dark header:not(main header) .border-t-2 {
+  border-color: #0a4477 !important;
+}
+
+/* Top Masthead Brand Logo Text */
+body.dark-mode header:not(main header) h1,
+html.dark header:not(main header) h1,
+body.dark-mode header:not(main header) a span.font-serif,
+html.dark header:not(main header) a span.font-serif,
+body.dark-mode header:not(main header) a .font-serif {
+  color: #FFFFFF !important;
+}
+
+/* Top Masthead Brand Slogan */
+body.dark-mode header:not(main header) p[data-i18n="header.slogan"],
+html.dark header:not(main header) p[data-i18n="header.slogan"] {
+  color: #94A3B8 !important;
+}
+
+/* Header Navigation Links */
+body.dark-mode #nav-categories-container a,
+html.dark #nav-categories-container a {
+  color: #E2E8F0 !important;
+  opacity: 1 !important;
+}
+
+body.dark-mode #nav-categories-container a:hover,
+html.dark #nav-categories-container a:hover {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #nav-categories-container a.border-b-2,
+html.dark #nav-categories-container a.border-b-2,
+body.dark-mode #nav-categories-container a[class*="border-blue-"],
+html.dark #nav-categories-container a[class*="border-blue-"] {
+  color: #38BDF8 !important;
+  border-bottom-color: #38BDF8 !important;
+}
+
+/* Header Mobile Buttons & Search */
+body.dark-mode header:not(main header) #mobile-menu-toggle,
+html.dark header:not(main header) #mobile-menu-toggle,
+body.dark-mode header:not(main header) #mobile-search-toggle-btn,
+html.dark header:not(main header) #mobile-search-toggle-btn {
+  color: #FFFFFF !important;
+}
+
+/* Footer in Dark Mode (#032B4E) */
+body.dark-mode footer,
+html.dark footer,
+body.dark-mode footer.bg-slate-900,
+html.dark footer.bg-slate-900,
+body.dark-mode footer.bg-white,
+html.dark footer.bg-white {
+  background-color: #032B4E !important;
+  border-top-color: #0a4477 !important;
+}
+
+body.dark-mode footer .border-slate-800,
+html.dark footer .border-slate-800,
+body.dark-mode footer .border-t,
+html.dark footer .border-t {
+  border-color: #0a4477 !important;
+}
+
+body.dark-mode footer h3,
+body.dark-mode footer h4,
+html.dark footer h3,
+html.dark footer h4 {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode footer p,
+body.dark-mode footer a,
+body.dark-mode footer li,
+body.dark-mode footer span,
+html.dark footer p,
+html.dark footer a,
+html.dark footer li,
+html.dark footer span {
+  color: #CBD5E1 !important;
+}
+
+body.dark-mode footer a:hover,
+html.dark footer a:hover {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode footer .text-slate-500,
+html.dark footer .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+/* ========================================================
+ * PHÂN KHU ĐỀ XUẤT: DÀNH CHO BẠN (FOR YOU) - MÀU XANH THAN (#032B4E) ĐỒNG BỘ NAV & LOGO
+ * ======================================================== */
+body.dark-mode #for-you-section,
+html.dark #for-you-section {
+  background-color: #032B4E !important;
+  background-image: none !important;
+  border-color: #0a4477 !important;
+}
+
+body.dark-mode #for-you-section .border-blue-100,
+html.dark #for-you-section .border-blue-100,
+body.dark-mode #for-you-section .border-slate-700,
+html.dark #for-you-section .border-slate-700,
+body.dark-mode #for-you-section .border-b,
+html.dark #for-you-section .border-b {
+  border-color: #0a4477 !important;
+}
+
+body.dark-mode #for-you-section h2,
+body.dark-mode #for-you-section h2 span,
+html.dark #for-you-section h2,
+html.dark #for-you-section h2 span {
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #for-you-indicator-tag,
+html.dark #for-you-indicator-tag {
+  background-color: #0a4477 !important;
+  color: #7dd3fc !important;
+}
+
+body.dark-mode #for-you-section button,
+html.dark #for-you-section button {
+  background-color: #0a4477 !important;
+  border-color: #14568f !important;
+  color: #FFFFFF !important;
+}
+
+body.dark-mode #for-you-section button:hover,
+html.dark #for-you-section button:hover {
+  background-color: #0d5494 !important;
+}
+
+body.dark-mode #for-you-section button svg,
+html.dark #for-you-section button svg {
+  color: #CBD5E1 !important;
+}
+
+/* Thẻ bài viết con bên trong khu vực Dành cho bạn ở Dark mode */
+body.dark-mode #for-you-container > div,
+html.dark #for-you-container > div {
+  background-color: #06192c !important;
+  border-color: #0a4477 !important;
+}
+
+body.dark-mode #for-you-container > div:hover,
+html.dark #for-you-container > div:hover {
+  border-color: #155e96 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4) !important;
+}
+
 body.dark-mode .bg-gray-50,
-body.dark-mode .bg-slate-50 {
+body.dark-mode .bg-slate-50,
+html.dark .bg-gray-50,
+html.dark .bg-slate-50 {
   background-color: #1f2937 !important;
+}
+
+body.dark-mode .bg-slate-100,
+body.dark-mode .bg-gray-100,
+html.dark .bg-slate-100,
+html.dark .bg-gray-100 {
+  background-color: #334155 !important;
 }
 
 /* Dark Mode Search Input Text Color Fix */
 body.dark-mode input[type="text"],
 body.dark-mode input[name="q"],
 body.dark-mode input[name="search"],
-body.dark-mode #search-input-field {
+body.dark-mode #search-input-field,
+html.dark input[type="text"],
+html.dark input[name="q"],
+html.dark input[name="search"],
+html.dark #search-input-field {
   color: #000000 !important;
   background-color: #ffffff !important;
 }
@@ -106,7 +313,11 @@ body.dark-mode #search-input-field {
 body.dark-mode input[type="text"]::placeholder,
 body.dark-mode input[name="q"]::placeholder,
 body.dark-mode input[name="search"]::placeholder,
-body.dark-mode #search-input-field::placeholder {
+body.dark-mode #search-input-field::placeholder,
+html.dark input[type="text"]::placeholder,
+html.dark input[name="q"]::placeholder,
+html.dark input[name="search"]::placeholder,
+html.dark #search-input-field::placeholder {
   color: #64748b !important;
 }
 
@@ -116,26 +327,82 @@ body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
 body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
 body.dark-mode .text-slate-900,
-body.dark-mode .text-gray-900 {
+body.dark-mode .text-gray-900,
+html.dark .text-slate-900,
+html.dark .text-gray-900 {
   color: #F9FAFB !important;
 }
 
-/* Dark Mode Body Text & Sapo High Contrast */
+/* Dark Mode Body Text, Comments & Sub-article Titles High Contrast */
 body.dark-mode .article-body,
 body.dark-mode #article-content,
+body.dark-mode .text-slate-800,
+body.dark-mode .text-gray-800,
 body.dark-mode .text-slate-700,
-body.dark-mode .text-gray-700 {
+body.dark-mode .text-gray-700,
+html.dark .text-slate-800,
+html.dark .text-gray-800,
+html.dark .text-slate-700,
+html.dark .text-gray-700 {
   color: #E5E7EB !important;
 }
 
-/* Dark Mode Meta Information (Author, Date, Views) */
+/* Dark Mode Meta Information (Author, Date, Views, Byline) */
 body.dark-mode .article-meta-info,
 body.dark-mode .text-slate-600,
 body.dark-mode .text-slate-500,
+body.dark-mode .text-slate-400,
 body.dark-mode .text-gray-600,
-body.dark-mode .text-gray-500 {
+body.dark-mode .text-gray-500,
+body.dark-mode .text-gray-400,
+html.dark .text-slate-600,
+html.dark .text-slate-500,
+html.dark .text-gray-600,
+html.dark .text-gray-500 {
   color: #9CA3AF !important;
+}
+
+/* Dark Mode Textarea (Comments, Sapo) */
+body.dark-mode textarea,
+html.dark textarea {
+  background-color: #1f2937 !important;
+  color: #F9FAFB !important;
+  border-color: #374151 !important;
+}
+
+body.dark-mode textarea::placeholder,
+html.dark textarea::placeholder {
+  color: #9CA3AF !important;
+}
+
+/* Dark Mode Poll / Reader Survey Widget */
+body.dark-mode #home-poll-widget-container,
+body.dark-mode #article-poll-container,
+html.dark #home-poll-widget-container,
+html.dark #article-poll-container {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+}
+
+body.dark-mode #home-poll-widget-container p,
+body.dark-mode #article-poll-container p,
+body.dark-mode #home-poll-widget-container span,
+body.dark-mode #article-poll-container span,
+html.dark #home-poll-widget-container p,
+html.dark #article-poll-container p,
+html.dark #home-poll-widget-container span,
+html.dark #article-poll-container span {
+  color: #F3F4F6 !important;
+}
+
+body.dark-mode #home-poll-widget-container .text-purple-600,
+body.dark-mode #article-poll-container .text-purple-600,
+html.dark #home-poll-widget-container .text-purple-600,
+html.dark #article-poll-container .text-purple-600 {
+  color: #c084fc !important;
 }
 
 /* Dark Mode Sapo Card Styling */

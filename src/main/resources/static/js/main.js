@@ -7,6 +7,7 @@ const EYE_ICON_SVG = `<svg class="eye-icon-svg inline-block shrink-0" viewBox="0
 const BOOKMARK_FILLED_SVG = `<svg class="w-4 h-4 text-blue-600 inline-block" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
 const BOOKMARK_OUTLINE_SVG = `<svg class="w-4 h-4 text-slate-500 hover:text-blue-600 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
 const CLOCK_ICON_SVG = `<svg class="w-3.5 h-3.5 inline-block text-slate-400 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+const COMMENT_ICON_SVG = `<svg class="w-3.5 h-3.5 inline-block shrink-0 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.1 20A9 9 0 1 1 20 16.1L22 22z"/></svg>`;
 
 // Bộ đệm ID các bài viết đã lưu bởi người dùng
 window.userBookmarkedIdsSet = window.userBookmarkedIdsSet || new Set();
@@ -36,6 +37,102 @@ function getBookmarkBtnHtml(postId, extraClass = 'absolute top-3 right-3 z-10') 
       ${icon}
     </button>
   `;
+}
+
+// ========================================================
+// HỆ THỐNG ĐẾM & NẠP SỐ BÌNH LUẬN THỜI GIAN THỰC (REALTIME COMMENTS COUNT)
+// ========================================================
+window.postCommentsCountMap = window.postCommentsCountMap || {};
+let commentHydrateTimer = null;
+
+function countCommentsRecursively(comments) {
+  if (!Array.isArray(comments)) return 0;
+  let count = 0;
+  for (const c of comments) {
+    count += 1;
+    if (c && Array.isArray(c.replies) && c.replies.length > 0) {
+      count += countCommentsRecursively(c.replies);
+    }
+  }
+  return count;
+}
+
+function formatCompactViews(views) {
+  views = Number(views) || 0;
+  if (views >= 1000000) {
+    return (views / 1000000).toFixed(1).replace('.0', '') + 'M';
+  }
+  if (views >= 10000) {
+    return (views / 1000).toFixed(1).replace('.0', '') + 'k';
+  }
+  if (views >= 1000) {
+    return views.toLocaleString('vi-VN');
+  }
+  return String(views);
+}
+
+function getCommentBadgeHtml(postId, initialCount = 0, extraClass = '') {
+  if (!postId) return '';
+  postId = Number(postId);
+  const count = (window.postCommentsCountMap[postId] !== undefined)
+    ? window.postCommentsCountMap[postId]
+    : (initialCount !== undefined && initialCount !== null ? initialCount : 0);
+  return `
+    <span class="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 font-medium ${extraClass}" data-comment-post-id="${postId}" title="Số bình luận">
+      ${COMMENT_ICON_SVG}
+      <span class="comment-count-val">${count}</span>
+    </span>
+  `;
+}
+
+function triggerCommentCountHydration() {
+  if (commentHydrateTimer) clearTimeout(commentHydrateTimer);
+  commentHydrateTimer = setTimeout(async () => {
+    const badges = document.querySelectorAll('[data-comment-post-id]');
+    if (!badges || badges.length === 0) return;
+
+    const idsToFetch = new Set();
+    badges.forEach(b => {
+      const pid = Number(b.getAttribute('data-comment-post-id'));
+      if (pid && window.postCommentsCountMap[pid] === undefined) {
+        idsToFetch.add(pid);
+      }
+    });
+
+    if (idsToFetch.size === 0) {
+      badges.forEach(b => {
+        const pid = Number(b.getAttribute('data-comment-post-id'));
+        if (pid && window.postCommentsCountMap[pid] !== undefined) {
+          const valEl = b.querySelector('.comment-count-val');
+          if (valEl) valEl.innerText = window.postCommentsCountMap[pid];
+        }
+      });
+      return;
+    }
+
+    await Promise.all(Array.from(idsToFetch).map(async (pid) => {
+      try {
+        const res = await fetch(`/api/v1/news/posts/${pid}/comments`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = (json && json.data) ? json.data : [];
+          window.postCommentsCountMap[pid] = countCommentsRecursively(list);
+        } else {
+          window.postCommentsCountMap[pid] = 0;
+        }
+      } catch (e) {
+        window.postCommentsCountMap[pid] = 0;
+      }
+    }));
+
+    badges.forEach(b => {
+      const pid = Number(b.getAttribute('data-comment-post-id'));
+      if (pid && window.postCommentsCountMap[pid] !== undefined) {
+        const valEl = b.querySelector('.comment-count-val');
+        if (valEl) valEl.innerText = window.postCommentsCountMap[pid];
+      }
+    });
+  }, 40);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -80,6 +177,7 @@ function triggerDynamicContentReady() {
   if (window.onDynamicContentReady) {
     window.onDynamicContentReady();
   }
+  triggerCommentCountHydration();
 }
 
 /* HELPER: PARSE UTC DATE */
@@ -119,10 +217,15 @@ function initDarkMode() {
   const isDark = localStorage.getItem('theme') === 'dark';
   if (isDark) {
     document.body.classList.add('dark-mode');
+    document.documentElement.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark-mode');
+    document.documentElement.classList.remove('dark');
   }
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
+      document.documentElement.classList.toggle('dark');
       const current = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
       localStorage.setItem('theme', current);
     });
@@ -183,6 +286,24 @@ function toggleMobileDrawer(open) {
     drawer.classList.add('hidden');
   }
 }
+
+/* MOBILE INLINE SEARCH TOGGLE (Hiển thị ngay trên các chuyên mục) */
+function toggleMobileSearch(show) {
+  const bar = document.getElementById('mobile-search-bar');
+  const input = document.getElementById('mobile-search-input');
+  if (!bar) return;
+  const isHidden = bar.classList.contains('hidden');
+  const shouldOpen = show !== undefined ? show : isHidden;
+  if (shouldOpen) {
+    bar.classList.remove('hidden');
+    if (input) {
+      setTimeout(() => input.focus(), 60);
+    }
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+window.toggleMobileSearch = toggleMobileSearch;
 
 /* RENDER CATEGORIES IN HEADER NAV & MOBILE DRAWER WITH ACTIVE STATE HIGHLIGHT */
 async function initCategoriesNav() {
@@ -472,6 +593,8 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
           <div class="flex items-center gap-4 text-xs text-slate-300 pt-1 border-t border-white/15 flex-wrap">
             <span>Bút danh: <strong class="text-white">${byline}</strong></span>
             <span>•</span>
+            ${getCommentBadgeHtml(post.id, post.commentsCount, 'text-slate-300')}
+            <span>•</span>
             <span class="inline-flex items-center gap-1">${EYE_ICON_SVG} <span>${post.viewsCount || 0} lượt xem</span></span>
             <span>•</span>
             <span class="text-blue-300 font-semibold">${readTime}</span>
@@ -511,42 +634,63 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
     </div>
   ` : '';
 
-  // Render Cột Phải (Side Trending Cards)
+  // Render Cột Phải (Side Trending Cards - Layout ảnh ngang bên trên theo góp ý người dùng)
   const sideHtml = sidePosts.map(post => {
     const sideImg = post.thumbnailUrl || DEFAULT_PLACEHOLDER_IMG;
     const sideByline = post.byline || post.authorName || 'Tòa soạn';
-    const sideSeriesBadge = post.seriesName ? `<span class="text-[9px] bg-amber-100 text-amber-800 px-1 rounded font-bold">Kỳ ${post.seriesOrder || 1}</span>` : '';
+    const sideSeriesBadge = post.seriesName ? `<span class="text-[9px] bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 px-1.5 py-0.5 rounded font-bold">Kỳ ${post.seriesOrder || 1}</span>` : '';
     const sideRelTime = formatRelativeTime(post.publishedAt);
     const sideReadTime = post.readingTime ? `${post.readingTime}p đọc` : '3p đọc';
     const isTrend = Boolean(post.isTrending);
 
     return `
-      <div class="news-card-hover group flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer flex-1 items-stretch" onclick="location.href='article-detail.html?slug=${post.slug}'">
-        <div class="w-32 sm:w-36 self-stretch rounded-xl overflow-hidden shrink-0 border border-slate-200/60 dark:border-slate-700 relative min-h-[140px]">
-          <img src="${sideImg}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover" alt="${post.title}">
-          ${isTrend ? '<span class="absolute top-2 left-2 bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-xs tracking-wider">Trend</span>' : ''}
-          ${getBookmarkBtnHtml(post.id, 'absolute top-2 right-2 z-10')}
+      <div class="news-card-hover group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer overflow-hidden flex-1 justify-between" onclick="location.href='article-detail.html?slug=${post.slug}'">
+        <!-- Ảnh nằm ngang bên trên (Horizontal banner on top) -->
+        <div class="w-full h-36 sm:h-40 relative overflow-hidden shrink-0 border-b border-slate-100 dark:border-slate-700/60">
+          <img src="${sideImg}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${post.title}">
+          ${isTrend ? '<span class="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-xs tracking-wider z-10">Trend</span>' : ''}
+          ${getBookmarkBtnHtml(post.id, 'absolute top-2.5 right-2.5 z-10')}
         </div>
-        <div class="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+
+        <!-- Khối thông tin rộng rãi bên dưới (Ample space below) -->
+        <div class="p-3.5 sm:p-4 flex flex-col justify-between flex-1 space-y-2">
           <div class="space-y-1.5">
-            <div class="flex items-center gap-2 flex-wrap">
+            <!-- Metadata: Chuyên mục • Ngày đăng • Thời gian đọc -->
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 flex-wrap">
               <span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">${post.categoryName || 'Tin tức'}</span>
               ${sideSeriesBadge}
-              <span class="text-[10px] text-slate-400">${sideRelTime}</span>
+              <span class="text-slate-300 dark:text-slate-600">•</span>
+              <span class="whitespace-nowrap">${sideRelTime}</span>
+              <span class="text-slate-300 dark:text-slate-600">•</span>
+              <span class="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 font-medium whitespace-nowrap">${CLOCK_ICON_SVG} <span>${sideReadTime}</span></span>
             </div>
+
+            <!-- Tiêu đề bài viết -->
             <h3 class="font-serif text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
               ${post.title}
             </h3>
+
+            <!-- Tóm tắt Sapo -->
             <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
               ${post.sapo || ''}
             </p>
           </div>
-          <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2 border-t border-slate-100 dark:border-slate-700/60 pt-2">
-            <span class="font-medium text-slate-600 dark:text-slate-300 truncate max-w-[130px]">${sideByline}</span>
-            <div class="flex items-center gap-2">
-              <span class="text-slate-400">${sideReadTime}</span>
-              <span>•</span>
-              <span class="inline-flex items-center gap-1">${EYE_ICON_SVG} <span>${post.viewsCount || 0}</span></span>
+
+          <!-- Thanh chân thẻ: Tác giả bên trái, Bình luận & Lượt xem bên phải -->
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 mt-auto gap-2">
+            <!-- Tên tác giả / Bút danh rõ ràng không bị đè ép -->
+            <div class="flex items-center gap-1.5 min-w-0 flex-1 mr-1" title="Tác giả: ${sideByline}">
+              <svg class="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              <span class="font-semibold text-slate-700 dark:text-slate-200 truncate text-[11px]">${sideByline}</span>
+            </div>
+
+            <!-- Cụm bình luận & Lượt xem tách biệt, cân đối -->
+            <div class="flex items-center gap-2.5 shrink-0 whitespace-nowrap text-slate-400 dark:text-slate-400">
+              ${getCommentBadgeHtml(post.id, post.commentsCount, 'hover:text-blue-500 transition-colors')}
+              <span class="text-slate-300 dark:text-slate-600">•</span>
+              <span class="inline-flex items-center gap-1 hover:text-blue-500 transition-colors" title="Lượt xem: ${(post.viewsCount || 0).toLocaleString('vi-VN')}">
+                ${EYE_ICON_SVG} <span>${formatCompactViews(post.viewsCount || 0)}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -557,7 +701,7 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
   container.innerHTML = `
     <!-- CỘT TRÁI (HERO SPOTLIGHT SLIDER - 65% / 8 COLS) -->
     <div class="lg:col-span-8">
-      <div id="hero-slider" class="relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 h-[380px] sm:h-[440px] lg:h-[460px] select-none group">
+      <div id="hero-slider" class="relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 h-[380px] sm:h-[440px] lg:h-full min-h-[460px] select-none group">
         <!-- Khung Trượt (Track) -->
         <div id="hero-slider-track" class="flex w-full h-full transition-transform duration-500 ease-out will-change-transform">
           ${slidesHtml}
@@ -657,6 +801,7 @@ function renderLatestFeed(posts, emptyMessage = 'Chưa có bài viết mới.') 
         <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/60 pt-2.5">
           <span>Bút danh: <strong class="text-slate-800 dark:text-slate-200">${byline}</strong></span>
           <div class="flex items-center gap-3">
+            ${getCommentBadgeHtml(post.id, post.commentsCount)}
             <span class="inline-flex items-center gap-1">${EYE_ICON_SVG} <span>${post.viewsCount || 0} lượt xem</span></span>
             <span class="text-blue-600 dark:text-blue-400 font-medium">${readTime}</span>
           </div>
@@ -726,7 +871,10 @@ function renderFeaturedCategories(categories, allPosts) {
             <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
               ${leadPost.sapo || ''}
             </p>
-            <span class="text-[11px] text-slate-400">${leadRelTime}</span>
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span>${leadRelTime}</span>
+              ${getCommentBadgeHtml(leadPost.id, leadPost.commentsCount)}
+            </div>
           </div>
 
           <!-- Các bài phụ thu nhỏ -->
@@ -779,6 +927,8 @@ function renderTrending(posts) {
           </h4>
           <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
             <span class="font-semibold text-blue-600 dark:text-blue-400">${post.categoryName || 'Tin tức'}</span>
+            <span>•</span>
+            ${getCommentBadgeHtml(post.id, post.commentsCount)}
             <span>•</span>
             <span class="inline-flex items-center gap-1">${EYE_ICON_SVG} <span>${post.viewsCount || 0}</span></span>
           </div>
@@ -1089,7 +1239,7 @@ function renderArticleCommentSection(post) {
         </div>
 
         <div class="flex items-center justify-between pt-1">
-          <span class="text-[11px] text-slate-400">Tối thiểu 5 ký tự • Hiển thị tức thì</span>
+          <span class="text-[11px] text-slate-400">Tối thiểu 5 ký tự</span>
           <button type="submit" id="submit-comment-btn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer">
             <span>Gửi bình luận</span>
             <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -1199,11 +1349,16 @@ async function loadRelatedPosts(categorySlug, currentPostId) {
           <div class="p-4 flex flex-col justify-between flex-1 space-y-2">
             <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">${post.categoryName || 'Tin tức'}</span>
             <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 hover:text-blue-600 transition leading-snug">${post.title}</h4>
-            <span class="text-[11px] text-slate-400 mt-auto pt-2">${formatDate(post.publishedAt)}</span>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 mt-auto pt-2 border-t border-slate-100 dark:border-slate-700/60">
+              <span>${formatDate(post.publishedAt)}</span>
+              ${getCommentBadgeHtml(post.id, post.commentsCount)}
+            </div>
           </div>
         </div>
       `;
     }).join('');
+
+    triggerCommentCountHydration();
   } catch (err) {
     console.error("Lỗi nạp bài viết liên quan:", err);
   }
@@ -1265,6 +1420,12 @@ async function loadArticleComments(postId) {
     }
 
     if (countBadge) countBadge.innerText = totalCount;
+    window.postCommentsCountMap[postId] = totalCount;
+
+    // Cập nhật mọi badge bình luận của bài viết này nếu có trên trang
+    document.querySelectorAll(`[data-comment-post-id="${postId}"] .comment-count-val`).forEach(el => {
+      el.innerText = totalCount;
+    });
 
     if (!comments || comments.length === 0) {
       container.innerHTML = `
@@ -2226,6 +2387,8 @@ async function renderForYouRecommendations() {
               <span>${relTime}</span>
               <span>•</span>
               <span class="text-blue-600 dark:text-blue-400 font-semibold inline-flex items-center gap-1">${CLOCK_ICON_SVG} <span>${readTime}</span></span>
+              <span>•</span>
+              ${getCommentBadgeHtml(post.id, post.commentsCount)}
             </div>
             <h3 class="font-serif text-base font-bold text-slate-900 dark:text-white line-clamp-2 group-hover:text-blue-600 transition leading-snug cursor-pointer" onclick="location.href='article-detail.html?slug=${post.slug}'">
               ${post.title}
@@ -2237,6 +2400,8 @@ async function renderForYouRecommendations() {
         </div>
       `;
     }).join('');
+
+    triggerCommentCountHydration();
   } catch (err) {
     console.error("Lỗi nạp tin Dành cho bạn:", err);
     container.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">Không thể tải danh sách gợi ý.</div>`;
@@ -2408,7 +2573,11 @@ async function loadUserSavedArticles(tab) {
             <div class="min-w-0 flex-1">
               <span class="text-[10px] font-bold text-blue-600 uppercase">${p.categoryName || 'Tin tức'}</span>
               <h4 class="text-xs font-bold text-slate-800 dark:text-white truncate hover:text-blue-600 transition leading-snug">${p.title}</h4>
-              <span class="text-[10px] text-slate-400 mt-0.5 block">${formatDate(p.publishedAt)}</span>
+              <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
+                <span>${formatDate(p.publishedAt)}</span>
+                <span>•</span>
+                ${getCommentBadgeHtml(p.id, p.commentsCount)}
+              </div>
             </div>
           </div>
           ${tab === 'bookmarks' ? `
@@ -2420,6 +2589,8 @@ async function loadUserSavedArticles(tab) {
         </div>
       `;
     }).join('');
+
+    triggerCommentCountHydration();
   } catch (err) {
     console.error("Lỗi nạp bài viết đã lưu:", err);
     container.innerHTML = `<div class="py-8 text-center text-xs text-rose-500">Không thể tải danh sách bài viết.</div>`;

@@ -11,6 +11,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND (c.status = 'APPROVED' OR c.status IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findByPostIdApproved(@org.springframework.data.repository.query.Param("postId") Long postId);
 
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND (c.status = 'APPROVED' OR c.status IS NULL)")
+    Long countApprovedCommentsByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
+
     @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.status = :status ORDER BY c.createdAt DESC")
     List<Comment> findByPostIdAndStatusOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("postId") Long postId, @org.springframework.data.repository.query.Param("status") String status);
 

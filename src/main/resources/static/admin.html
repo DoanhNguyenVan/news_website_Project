@@ -5,6 +5,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CMS Admin Portal — Modern Blue SaaS Dashboard</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="shortcut icon" href="/favicon.ico">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,7 +81,7 @@
     }
   </style>
 </head>
-<body class="bg-[#F7F8FA] text-slate-800 antialiased h-screen w-screen flex flex-col md:flex-row overflow-hidden saas-admin">
+<body class="bg-[#F7F8FA] text-slate-800 antialiased h-screen w-screen flex md:flex-row overflow-hidden saas-admin">
 
   <!-- Sidebar Backdrop for Mobile -->
   <div id="admin-sidebar-backdrop" onclick="toggleAdminSidebar(false)" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
@@ -87,7 +89,7 @@
   <!-- ==========================================
        SIDEBAR NAVIGATION (MINIMALIST WHITE SIDEBAR - FIXED FULL HEIGHT)
   =========================================== -->
-  <aside id="admin-sidebar" class="relative fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white text-slate-600 flex flex-col border-r border-slate-200/80 shrink-0 transition-[width,padding] duration-300 ease-in-out -translate-x-full md:translate-x-0 md:static md:w-20 md:h-screen md:overflow-visible md:z-40 sidebar-collapsed">
+  <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white text-slate-600 flex flex-col border-r border-slate-200/80 shrink-0 transition-transform md:transition-[width,padding] duration-300 ease-in-out -translate-x-full md:translate-x-0 md:relative md:w-20 md:h-screen md:overflow-visible md:z-40 sidebar-collapsed">
     
     <!-- Collapse / Expand Toggle Button (Floating on edge, Circular SaaS Style) -->
     <button id="sidebar-collapse-btn" 
@@ -106,16 +108,12 @@
         <!-- Brand Logo Header (Modern SaaS Style) -->
         <div class="sidebar-brand-header flex items-center justify-between mb-8 px-1 pb-4 border-b border-slate-100">
           <div class="sidebar-brand flex items-center gap-3">
-            <div class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-sm shrink-0" title="NewsPortal SaaS">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" opacity="0.9"/>
-              </svg>
-            </div>
+            <img src="/images/favicon.png" alt="NewsPortal Logo" class="w-9 h-9 rounded-xl object-cover shadow-sm shrink-0 border border-slate-100" title="NewsPortal SaaS">
             <div class="sidebar-brand-text leading-tight whitespace-nowrap overflow-hidden">
               <span class="font-extrabold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
                 NewsPortal
               </span>
-              <span class="block text-[11px] text-blue-600 font-semibold tracking-wide">Editorial SaaS Suite</span>
+              <span id="sidebar-user-role" class="block text-[11px] text-blue-600 font-semibold tracking-wide truncate max-w-[160px]" title="Vai trò người dùng">Quản Trị Hệ Thống</span>
             </div>
           </div>
           <!-- Mobile Close Drawer Button -->
@@ -262,7 +260,6 @@
         </button>
         <div class="flex items-center gap-2 sm:gap-3">
           <h1 id="page-heading" class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">Dashboard</h1>
-          <span id="role-badge" class="px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-200/80 uppercase">SUPER_ADMIN</span>
         </div>
       </div>
 
@@ -551,8 +548,8 @@
         <!-- FORM TẠO / CHỈNH SỬA BÀI VIẾT (75% - 25% STICKY SIDEBAR SPLIT LAYOUT) -->
         <div id="post-form-container" class="bg-white p-3.5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 hidden">
           
-          <!-- STICKY FLOATING ACTION BAR FOR EDITOR -->
-          <div class="sticky top-[52px] sm:top-[60px] z-20 bg-white/95 backdrop-blur-md p-2.5 sm:p-3.5 rounded-2xl border border-slate-200 shadow-md flex flex-wrap items-center justify-between gap-2.5 mb-6">
+          <!-- ACTION BAR FOR EDITOR (Static, clean header, không bị dính đè lên bài viết khi cuộn) -->
+          <div class="bg-white p-2.5 sm:p-3.5 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-2.5 mb-6">
             <div class="flex items-center gap-3">
               <h2 id="post-form-heading" class="text-sm font-black text-slate-900 flex items-center gap-2">
                 ✏️ Sáng Tác Bài Viết
@@ -615,7 +612,7 @@
                       <span id="gauge-sapo-seo" class="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 rounded">Chuẩn SEO: 120-160 ký tự</span>
                     </div>
                   </div>
-                  <textarea id="form-post-sapo" required rows="2.5" oninput="autoExpandSapo(this); updateEditorialCounters();" placeholder="Tóm tắt 1-2 câu ngắn gọn, truyền tải toàn bộ thông điệp chính của bài viết..." class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition leading-relaxed overflow-hidden resize-none"></textarea>
+                  <textarea id="form-post-sapo" required rows="3" oninput="updateEditorialCounters();" placeholder="Tóm tắt 1-2 câu ngắn gọn, truyền tải toàn bộ thông điệp chính của bài viết..." class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition leading-relaxed h-28 max-h-36 overflow-y-auto overscroll-contain resize-y"></textarea>
                 </div>
 
                 <!-- WYSIWYG RICH TEXT EDITOR WITH ENHANCED JOURNALISTIC TOOLBAR -->
@@ -689,8 +686,8 @@
                       <span class="text-[11px] text-slate-400 italic ml-auto hidden sm:inline">💡 Ctrl+V dán ảnh trực tiếp</span>
                     </div>
 
-                    <!-- Editable Content Area -->
-                    <div id="editor-content-area" contenteditable="true" oninput="updateEditorialCounters()" class="p-4 min-h-[420px] text-base text-slate-800 focus:outline-none leading-relaxed overflow-y-auto"></div>
+                    <!-- Editable Content Area (Cuộn nội dung riêng biệt, không cuộn cả trang) -->
+                    <div id="editor-content-area" contenteditable="true" oninput="updateEditorialCounters()" class="p-4 h-[500px] max-h-[550px] text-base text-slate-800 focus:outline-none leading-relaxed overflow-y-auto overscroll-contain"></div>
                   </div>
 
                   <!-- Hidden input to submit with main form -->

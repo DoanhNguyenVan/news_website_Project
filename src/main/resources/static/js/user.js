@@ -7,8 +7,91 @@ let currentUserData = null;
 let savedArticlesList = [];
 let allCategoriesList = [];
 let userSelectedCategoryIds = [];
+const COMMENT_ICON_SVG = `<svg class="w-3.5 h-3.5 inline-block shrink-0 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.1 20A9 9 0 1 1 20 16.1L22 22z"/></svg>`;
+
+window.postCommentsCountMap = window.postCommentsCountMap || {};
+let userCommentHydrateTimer = null;
+
+function countCommentsRecursively(comments) {
+  if (!Array.isArray(comments)) return 0;
+  let count = 0;
+  for (const c of comments) {
+    count += 1;
+    if (c && Array.isArray(c.replies) && c.replies.length > 0) {
+      count += countCommentsRecursively(c.replies);
+    }
+  }
+  return count;
+}
+
+function getCommentBadgeHtml(postId, initialCount = 0, extraClass = '') {
+  if (!postId) return '';
+  postId = Number(postId);
+  const count = (window.postCommentsCountMap[postId] !== undefined)
+    ? window.postCommentsCountMap[postId]
+    : (initialCount !== undefined && initialCount !== null ? initialCount : 0);
+  return `
+    <span class="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 font-medium ${extraClass}" data-comment-post-id="${postId}" title="Số bình luận">
+      ${COMMENT_ICON_SVG}
+      <span class="comment-count-val">${count}</span>
+    </span>
+  `;
+}
+
+function triggerCommentCountHydration() {
+  if (userCommentHydrateTimer) clearTimeout(userCommentHydrateTimer);
+  userCommentHydrateTimer = setTimeout(async () => {
+    const badges = document.querySelectorAll('[data-comment-post-id]');
+    if (!badges || badges.length === 0) return;
+
+    const idsToFetch = new Set();
+    badges.forEach(b => {
+      const pid = Number(b.getAttribute('data-comment-post-id'));
+      if (pid && window.postCommentsCountMap[pid] === undefined) {
+        idsToFetch.add(pid);
+      }
+    });
+
+    if (idsToFetch.size === 0) {
+      badges.forEach(b => {
+        const pid = Number(b.getAttribute('data-comment-post-id'));
+        if (pid && window.postCommentsCountMap[pid] !== undefined) {
+          const valEl = b.querySelector('.comment-count-val');
+          if (valEl) valEl.innerText = window.postCommentsCountMap[pid];
+        }
+      });
+      return;
+    }
+
+    await Promise.all(Array.from(idsToFetch).map(async (pid) => {
+      try {
+        const res = await fetch(`/api/v1/news/posts/${pid}/comments`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = (json && json.data) ? json.data : [];
+          window.postCommentsCountMap[pid] = countCommentsRecursively(list);
+        } else {
+          window.postCommentsCountMap[pid] = 0;
+        }
+      } catch (e) {
+        window.postCommentsCountMap[pid] = 0;
+      }
+    }));
+
+    badges.forEach(b => {
+      const pid = Number(b.getAttribute('data-comment-post-id'));
+      if (pid && window.postCommentsCountMap[pid] !== undefined) {
+        const valEl = b.querySelector('.comment-count-val');
+        if (valEl) valEl.innerText = window.postCommentsCountMap[pid];
+      }
+    });
+  }, 40);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initDarkMode();
+  initFooterCategories();
+
   const token = localStorage.getItem('accessToken');
   if (!token) {
     alert("Vui lòng đăng nhập để truy cập trang cá nhân!");
@@ -208,6 +291,8 @@ function renderBookmarksGrid(posts) {
                 <span>${readTime}</span>
               </span>
               <span>•</span>
+              ${getCommentBadgeHtml(post.id, post.commentsCount)}
+              <span>•</span>
               <span class="text-slate-500 font-medium">${post.viewsCount || 0} lượt xem</span>
             </div>
             <h4 class="font-serif text-sm font-bold text-slate-900 group-hover:text-blue-600 transition line-clamp-2 leading-snug cursor-pointer" onclick="location.href='article-detail.html?slug=${post.slug}'">
@@ -230,6 +315,7 @@ function renderBookmarksGrid(posts) {
       </div>
     `;
   }).join('');
+  triggerCommentCountHydration();
 }
 
 function filterSavedArticles() {
@@ -517,6 +603,52 @@ async function handleChangePassword(e) {
   } catch (err) {
     msg.className = 'text-xs font-bold text-rose-600 block';
     msg.innerText = err.message;
+  }
+}
+
+/**
+ * Quản lý Dark Mode trên trang user.html
+ */
+function initDarkMode() {
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+  if (isDark) {
+    document.body.classList.add('dark-mode');
+    document.documentElement.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark-mode');
+    document.documentElement.classList.remove('dark');
+  }
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      document.documentElement.classList.toggle('dark');
+      const current = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+      localStorage.setItem('theme', current);
+    });
+  }
+}
+
+/**
+ * Nạp danh mục chuyên mục cho Footer trên trang user.html
+ */
+async function initFooterCategories() {
+  const footerContainer = document.getElementById('footer-categories-list');
+  if (!footerContainer) return;
+  try {
+    const categories = await ApiService.getCategories();
+    if (Array.isArray(categories) && categories.length > 0) {
+      footerContainer.innerHTML = `
+        <li><a href="index.html" class="hover:text-white transition">Trang chủ</a></li>
+        ${categories.slice(0, 5).map(cat => `
+          <li><a href="category.html?slug=${cat.slug}&id=${cat.id}" class="hover:text-white transition">${cat.name}</a></li>
+        `).join('')}
+      `;
+    }
+  } catch (err) {
+    console.error("Lỗi nạp categories footer user.html:", err);
   }
 }
 
