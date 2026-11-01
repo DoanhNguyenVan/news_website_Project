@@ -1060,15 +1060,16 @@ function renderArticleCommentSection(post) {
   // Trường hợp 2: ĐỘC GIẢ ĐÃ ĐĂNG NHẬP
   const displayName = user.fullName || user.username || 'Độc giả';
   const displayEmail = user.email || '';
-  const initialChar = (user.username || 'U').charAt(0).toUpperCase();
+  const isGoogle = (user.authProvider || '').toUpperCase() === 'GOOGLE';
+  const userAvatarSrc = (isGoogle && user.avatarUrl && user.avatarUrl.trim()) ? user.avatarUrl : '/images/default-avatar.png';
 
   container.innerHTML = `
     <div class="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200/80 mb-8 space-y-3">
       <!-- User info header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-200/70 text-xs">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs shrink-0">
-            ${initialChar}
+          <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-2xs bg-slate-100">
+            <img src="${userAvatarSrc}" class="w-full h-full object-cover" alt="${displayName}" onerror="this.onerror=null; this.src='/images/default-avatar.png';">
           </div>
           <div>
             <div class="flex items-center gap-1.5 font-extrabold text-slate-900">
@@ -1284,9 +1285,8 @@ async function loadArticleComments(postId) {
 }
 
 function renderCommentCard(c, isReply = false) {
-  const initials = getAvatarInitials(c.userName);
-  const avatarBg = getAvatarBgColor(c.userName);
   const timeStr = formatRelativeTime(c.createdAt);
+  const commentAvatar = (c.userAvatar || c.avatarUrl || '').trim() || '/images/default-avatar.png';
 
   const hasReplies = c.replies && Array.isArray(c.replies) && c.replies.length > 0;
   const repliesHtml = hasReplies
@@ -1298,8 +1298,8 @@ function renderCommentCard(c, isReply = false) {
       <!-- Comment Author & Meta -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-full ${avatarBg} text-white font-black text-xs flex items-center justify-center shadow-xs shrink-0">
-            ${initials}
+          <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-2xs bg-slate-100">
+            <img src="${commentAvatar}" class="w-full h-full object-cover" alt="${c.userName || 'Độc giả'}" onerror="this.onerror=null; this.src='/images/default-avatar.png';">
           </div>
           <div>
             <div class="text-xs font-black text-slate-900 flex items-center gap-1.5">

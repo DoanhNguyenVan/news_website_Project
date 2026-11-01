@@ -78,10 +78,10 @@
         <div class="flex items-center gap-4 sm:gap-5">
           <!-- Avatar with dynamic status -->
           <div class="relative shrink-0">
-            <div id="user-hero-avatar" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white text-xl sm:text-2xl font-bold flex items-center justify-center shadow-md overflow-hidden">
-              <span id="user-hero-initial">U</span>
+            <div id="user-hero-avatar" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-100 border-2 border-slate-200 text-white text-xl sm:text-2xl font-bold flex items-center justify-center shadow-md overflow-hidden">
+              <img src="/images/default-avatar.png" class="w-full h-full object-cover">
             </div>
-            <span class="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 border-2 border-white rounded-full" title="Tài khoản hoạt động"></span>
+            <span class="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 border-2 border-white rounded-full" title="Tài khoản hoạt động"></span>
           </div>
 
           <div class="space-y-1 min-w-0">
@@ -288,8 +288,8 @@
             <label class="block text-xs font-bold text-slate-700">Đường dẫn ảnh đại diện (Avatar URL)</label>
             <input type="url" id="input-profile-avatar" placeholder="https://example.com/avatar.jpg" class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition">
             
-            <!-- Preset Avatars -->
-            <div class="pt-2">
+            <!-- Preset Avatars (Ẩn để đảm bảo avatar tuân thủ quy chuẩn thống nhất) -->
+            <div class="pt-2 hidden">
               <span class="text-[11px] text-slate-400 block mb-1.5 font-medium">Hoặc chọn nhanh avatar mẫu:</span>
               <div class="flex items-center gap-2">
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" onclick="selectPresetAvatar(this.src)" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-blue-600 transition" alt="Preset 1">

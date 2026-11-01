@@ -77,13 +77,10 @@ async function loadUserProfile() {
       document.getElementById('local-password-form').classList.remove('hidden');
     }
 
-    // Avatar
+    // Avatar: Đồng bộ chuẩn xác 100% qua getAppAvatarUrl
     const avatarContainer = document.getElementById('user-hero-avatar');
-    if (user.avatarUrl && user.avatarUrl.trim() !== '') {
-      avatarContainer.innerHTML = `<img src="${user.avatarUrl}" class="w-full h-full object-cover" alt="${fullName}">`;
-    } else {
-      avatarContainer.innerHTML = `<span id="user-hero-initial">${fullName.charAt(0).toUpperCase()}</span>`;
-    }
+    const finalAvatarUrl = typeof getAppAvatarUrl === 'function' ? getAppAvatarUrl(user) : '/images/default-avatar.png';
+    avatarContainer.innerHTML = `<img src="${finalAvatarUrl}" class="w-full h-full object-cover" alt="${fullName}" onerror="this.onerror=null; this.src='/images/default-avatar.png';">`;
 
     // Form Hồ sơ
     document.getElementById('input-profile-fullname').value = fullName;

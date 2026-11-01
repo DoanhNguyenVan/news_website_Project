@@ -152,7 +152,11 @@ async function initAdminDashboard() {
   const emailEl = document.getElementById('header-user-email');
   const badgeEl = document.getElementById('role-badge');
 
-  if (avatarEl) avatarEl.innerText = (user.username || 'A').charAt(0).toUpperCase();
+  if (avatarEl) {
+    const isGoogle = (user.authProvider || '').toUpperCase() === 'GOOGLE';
+    const avatarSrc = (isGoogle && user.avatarUrl && user.avatarUrl.trim()) ? user.avatarUrl : '/images/default-avatar.png';
+    avatarEl.innerHTML = `<img src="${avatarSrc}" alt="Avatar" class="w-full h-full object-cover rounded-full" onerror="this.onerror=null; this.src='/images/default-avatar.png';">`;
+  }
   if (nameEl) nameEl.innerText = user.fullName || user.username || 'Admin System';
   if (emailEl) emailEl.innerText = user.email || 'admin@newsportal.com';
   if (badgeEl) {
@@ -1998,8 +2002,8 @@ async function filterUsersTable() {
         <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
           <td class="p-3.5">
             <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shadow-inner">
-                ${(u.username || 'U').charAt(0).toUpperCase()}
+              <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-200 shadow-2xs bg-slate-100">
+                <img src="${((u.authProvider || '').toUpperCase() === 'GOOGLE' && u.avatarUrl && u.avatarUrl.trim()) ? u.avatarUrl : '/images/default-avatar.png'}" alt="Avatar" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/images/default-avatar.png';">
               </div>
               <div>
                 <div class="font-bold text-slate-900">${u.username}</div>

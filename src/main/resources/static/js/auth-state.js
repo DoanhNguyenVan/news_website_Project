@@ -86,8 +86,8 @@ function renderHeaderAuth() {
         </a>
       ` : ''}
       <a href="user.html" class="user-avatar-pill flex items-center rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:ring-2 hover:ring-blue-400/60 transition cursor-pointer" title="Trang cá nhân & Quản lý bài lưu">
-        <div class="w-6 h-6 bg-blue-600 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
-          ${user.avatarUrl ? `<img src="${user.avatarUrl}" alt="Avatar" class="w-full h-full object-cover">` : (user.fullName || user.username ? (user.fullName || user.username).charAt(0).toUpperCase() : 'U')}
+        <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 shadow-2xs bg-slate-100 dark:bg-slate-700">
+          <img src="${typeof getAppAvatarUrl === 'function' ? getAppAvatarUrl(user) : '/images/default-avatar.png'}" alt="Avatar" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/images/default-avatar.png';">
         </div>
         <span class="user-name-text text-xs font-semibold max-w-[120px] truncate">${user.fullName || user.username}</span>
       </a>

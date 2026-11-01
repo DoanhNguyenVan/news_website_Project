@@ -41,3 +41,15 @@ function formatDate(dateString) {
     return dateString;
   }
 }
+
+// Chuẩn hóa lấy Avatar đồng bộ toàn hệ thống:
+// - Chỉ dùng avatar Google khi người dùng đăng nhập bằng Google (authProvider === 'GOOGLE').
+// - Mọi trường hợp khác (tài khoản mật khẩu/local, chưa đăng nhập, v.v.): 100% dùng avatar mặc định xám trắng.
+function getAppAvatarUrl(user) {
+  if (!user) return '/images/default-avatar.png';
+  const isGoogle = (user.authProvider || '').toUpperCase() === 'GOOGLE';
+  if (isGoogle && user.avatarUrl && typeof user.avatarUrl === 'string' && user.avatarUrl.trim().length > 0) {
+    return user.avatarUrl.trim();
+  }
+  return '/images/default-avatar.png';
+}
