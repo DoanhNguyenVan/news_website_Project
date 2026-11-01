@@ -65,8 +65,11 @@ public class CommentService {
         }
 
         // Bảo mật XSS và Validation nội dung bình luận (5 - 1000 ký tự)
+        // Dùng token để bảo tồn toàn vẹn các ký tự xuống dòng (\n, \r\n) trước khi qua bộ lọc Jsoup
         String rawContent = dto.getContent() != null ? dto.getContent().trim() : "";
-        String cleanContent = Jsoup.clean(rawContent, Safelist.none()).trim();
+        String newlineToken = "___NEWLINE_TOKEN___";
+        String protectedContent = rawContent.replace("\r\n", newlineToken).replace("\n", newlineToken);
+        String cleanContent = Jsoup.clean(protectedContent, Safelist.none()).replace(newlineToken, "\n").trim();
 
         if (cleanContent.length() < 5 || cleanContent.length() > 1000) {
             throw new IllegalArgumentException("Nội dung bình luận phải có độ dài từ 5 đến 1000 ký tự!");

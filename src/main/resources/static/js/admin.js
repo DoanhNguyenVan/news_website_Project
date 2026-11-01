@@ -2244,8 +2244,8 @@ async function loadCommentsTable() {
             <div class="text-[10px] text-slate-400 mt-0.5">${formatDate(c.createdAt)}</div>
           </td>
           <td class="p-3.5 max-w-md">
-            <div class="text-xs text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded-xl border border-slate-200/70 shadow-2xs ${isHidden ? 'opacity-50 line-through bg-slate-100/70' : ''}">
-              ${c.content || ''}
+            <div class="text-xs text-slate-800 leading-relaxed font-medium bg-slate-50 p-3 rounded-xl border border-slate-200/70 shadow-2xs whitespace-pre-line ${isHidden ? 'opacity-50 line-through bg-slate-100/70' : ''}">
+              ${typeof formatCommentContent === 'function' ? formatCommentContent(c.content) : (c.content || '').replace(/\n/g, '<br>')}
             </div>
           </td>
           <td class="p-3.5 max-w-xs">

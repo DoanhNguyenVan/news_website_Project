@@ -1318,8 +1318,8 @@ function renderCommentCard(c, isReply = false) {
         ` : ''}
       </div>
 
-      <!-- Comment Content -->
-      <p class="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal whitespace-pre-line pl-10">${c.content}</p>
+      <!-- Comment Content (Đã format nhận diện xuống dòng \n và <br>) -->
+      <div class="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal whitespace-pre-line pl-10">${typeof formatCommentContent === 'function' ? formatCommentContent(c.content) : (c.content || '').replace(/\n/g, '<br>')}</div>
 
       <!-- Reply Box Container -->
       <div id="reply-box-container-${c.id}" class="hidden pl-10 pt-2"></div>

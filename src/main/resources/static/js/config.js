@@ -53,3 +53,12 @@ function getAppAvatarUrl(user) {
   }
   return '/images/default-avatar.png';
 }
+
+// Định dạng nội dung bình luận: Thoát mã HTML chống XSS và giữ nguyên toàn bộ dấu xuống dòng bằng <br>
+function formatCommentContent(content) {
+  if (!content) return '';
+  const div = document.createElement('div');
+  div.textContent = content;
+  const safeText = div.innerHTML;
+  return safeText.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+}
