@@ -12,14 +12,32 @@ const CONFIG = {
 /**
  * UTILITY FUNCTIONS
  */
+// Chuẩn hoá parse thời gian UTC từ backend TiDB/Render sang Date đối tượng theo giờ địa phương (Việt Nam UTC+7)
+function parseUtcDate(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
+  let s = String(dateStr).trim();
+  // Nếu là chuỗi ISO hoặc SQL datetime chưa có múi giờ, thêm 'Z' để browser tự chuyển sang múi giờ người dùng
+  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?$/.test(s)) {
+    s = s.replace(' ', 'T') + 'Z';
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  if (!dateString) return 'Mới đăng';
+  try {
+    const date = parseUtcDate(dateString);
+    if (!date) return dateString;
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (e) {
+    return dateString;
+  }
 }

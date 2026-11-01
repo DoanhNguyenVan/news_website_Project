@@ -81,12 +81,25 @@ function triggerDynamicContentReady() {
   }
 }
 
+/* HELPER: PARSE UTC DATE */
+function parseUtcDate(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
+  let s = String(dateStr).trim();
+  // Nếu là chuỗi ISO hoặc SQL datetime chưa có múi giờ, thêm 'Z' để browser chuyển sang giờ Việt Nam (UTC+7)
+  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?$/.test(s)) {
+    s = s.replace(' ', 'T') + 'Z';
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 /* HELPER: DATE FORMATTER */
 function formatDate(dateStr) {
   if (!dateStr) return 'Mới đăng';
   try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
+    const d = parseUtcDate(dateStr);
+    if (!d) return dateStr;
     return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   } catch (e) {
     return dateStr;
@@ -1153,8 +1166,8 @@ async function loadRelatedPosts(categorySlug, currentPostId) {
 function formatRelativeTime(dateString) {
   if (!dateString) return 'Vừa xong';
   try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Vừa xong';
+    const date = parseUtcDate(dateString);
+    if (!date) return 'Vừa xong';
     const now = new Date();
     const diffMs = now - date;
     const diffSec = Math.floor(diffMs / 1000);
