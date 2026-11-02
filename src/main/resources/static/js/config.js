@@ -12,15 +12,15 @@ const CONFIG = {
 /**
  * UTILITY FUNCTIONS
  */
-// Chuẩn hoá parse thời gian UTC từ backend TiDB/Render sang Date đối tượng theo giờ địa phương (Việt Nam UTC+7)
+// Chuẩn hoá parse thời gian từ backend Spring Boot sang Date đối tượng theo giờ địa phương (Việt Nam UTC+7)
 function parseUtcDate(dateStr) {
   if (!dateStr) return null;
   if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
   let s = String(dateStr).trim();
-  // Nếu là chuỗi ISO hoặc SQL datetime chưa có múi giờ, thêm 'Z' để browser tự chuyển sang múi giờ người dùng
-  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?$/.test(s)) {
-    s = s.replace(' ', 'T') + 'Z';
-  }
+  // Chuẩn hóa khoảng trắng ' ' thành 'T' để mọi browser (Safari/iOS/Chrome) đọc chuẩn ISO
+  s = s.replace(' ', 'T');
+  // Không tự ý nối 'Z' vì thời gian từ backend Spring Boot đã theo chuẩn múi giờ Việt Nam (GMT+7).
+  // Việc thêm 'Z' khiến trình duyệt hiểu nhầm là UTC và cộng dồn thêm 7 tiếng (thành giờ tương lai).
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -30,13 +30,12 @@ function formatDate(dateString) {
   try {
     const date = parseUtcDate(dateString);
     if (!date) return dateString;
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${hours}:${minutes} ${day}/${month}/${year}`;
   } catch (e) {
     return dateString;
   }

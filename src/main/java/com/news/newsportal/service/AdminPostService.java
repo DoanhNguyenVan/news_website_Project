@@ -25,6 +25,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminPostService {
 
+    private static final java.time.ZoneId VN_ZONE = java.time.ZoneId.of("Asia/Ho_Chi_Minh");
+
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
@@ -105,7 +107,7 @@ public class AdminPostService {
                 .status(targetStatus)
                 .author(author)
                 .category(category)
-                .publishedAt(targetStatus == PostStatus.PUBLISHED ? LocalDateTime.now() : null)
+                .publishedAt(targetStatus == PostStatus.PUBLISHED ? LocalDateTime.now(VN_ZONE) : null)
                 .build();
 
         Post saved = postRepository.save(post);
@@ -198,7 +200,7 @@ public class AdminPostService {
         if (newStatus == PostStatus.REJECTED) {
             post.setRejectionReason(rejectionReason);
         } else if (newStatus == PostStatus.PUBLISHED) {
-            post.setPublishedAt(LocalDateTime.now());
+            post.setPublishedAt(LocalDateTime.now(VN_ZONE));
             post.setRejectionReason(null);
         }
 
@@ -320,7 +322,7 @@ public class AdminPostService {
             }
             post.setStatus(newStatus);
             if (newStatus == PostStatus.PUBLISHED && post.getPublishedAt() == null) {
-                post.setPublishedAt(LocalDateTime.now());
+                post.setPublishedAt(LocalDateTime.now(VN_ZONE));
             }
         }
 
@@ -370,7 +372,7 @@ public class AdminPostService {
         // SOFT DELETE: Chuyển vào thùng rác, lưu thời điểm & người xóa
         // TUYỆT ĐỐI KHÔNG XÓA bình luận hoặc liên kết để bảo toàn dữ liệu
         post.setIsDeleted(true);
-        post.setDeletedAt(LocalDateTime.now());
+        post.setDeletedAt(LocalDateTime.now(VN_ZONE));
         post.setDeletedBy(currentUser.getUsername());
         postRepository.save(post);
     }

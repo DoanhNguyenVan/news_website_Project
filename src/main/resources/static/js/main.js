@@ -185,10 +185,10 @@ function parseUtcDate(dateStr) {
   if (!dateStr) return null;
   if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
   let s = String(dateStr).trim();
-  // Nếu là chuỗi ISO hoặc SQL datetime chưa có múi giờ, thêm 'Z' để browser chuyển sang giờ Việt Nam (UTC+7)
-  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?$/.test(s)) {
-    s = s.replace(' ', 'T') + 'Z';
-  }
+  // Chuẩn hóa định dạng SQL datetime 'YYYY-MM-DD HH:mm:ss' thành ISO 'YYYY-MM-DDTHH:mm:ss'
+  s = s.replace(' ', 'T');
+  // Không tự ý nối 'Z' vì thời gian từ backend Spring Boot đã theo chuẩn múi giờ Việt Nam (GMT+7).
+  // Việc thêm 'Z' khiến trình duyệt hiểu nhầm là UTC và cộng dồn thêm 7 tiếng (thành giờ tương lai).
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -199,7 +199,12 @@ function formatDate(dateStr) {
   try {
     const d = parseUtcDate(dateStr);
     if (!d) return dateStr;
-    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${hours}:${minutes} ${day}/${month}/${year}`;
   } catch (e) {
     return dateStr;
   }
