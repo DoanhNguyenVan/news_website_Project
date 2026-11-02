@@ -32,7 +32,7 @@ public class NewsService {
     private final CommentService commentService;
 
     public List<com.news.newsportal.entity.Category> getPublicCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.findByIsDeletedFalse();
     }
 
     /**
@@ -44,16 +44,16 @@ public class NewsService {
 
         // Danh sách Spotlight được Admin chọn ghim (hỗ trợ Slider nhiều bài, tối đa 10 bài)
         List<PostDTO> spotlight = postRepository
-                .findByStatusAndIsSpotlightTrueOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
+                .findByStatusAndIsSpotlightTrueAndIsDeletedFalseOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
 
         List<PostDTO> latest = postRepository
-                .findByStatusOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
+                .findByStatusAndIsDeletedFalseOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
 
         // Danh sách Xu hướng (Trending) được Admin tùy chỉnh ghim (isTrending = true)
         List<PostDTO> trendingPinned = postRepository
-                .findByStatusAndIsTrendingTrueOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 6))
+                .findByStatusAndIsTrendingTrueAndIsDeletedFalseOrderByPublishedAtDesc(PostStatus.PUBLISHED, PageRequest.of(0, 6))
                 .stream().map(this::convertToDTO).collect(Collectors.toList());
 
         // Bổ sung thêm các bài viết nhiều lượt xem nhất nếu số lượng bài ghim ít hơn 6
@@ -63,7 +63,7 @@ public class NewsService {
         }
         if (trendingMap.size() < 6) {
             List<PostDTO> topViews = postRepository
-                    .findByStatusOrderByViewsCountDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
+                    .findByStatusAndIsDeletedFalseOrderByViewsCountDesc(PostStatus.PUBLISHED, PageRequest.of(0, 10))
                     .stream().map(this::convertToDTO).collect(Collectors.toList());
             for (PostDTO p : topViews) {
                 trendingMap.putIfAbsent(p.getId(), p);
@@ -81,7 +81,7 @@ public class NewsService {
 
     public Page<PostDTO> getPostsByCategory(String slug, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return postRepository.findByStatusAndCategorySlug(PostStatus.PUBLISHED, slug, pageable)
+        return postRepository.findByStatusAndCategorySlugAndIsDeletedFalse(PostStatus.PUBLISHED, slug, pageable)
                 .map(this::convertToDTO);
     }
 
@@ -96,7 +96,7 @@ public class NewsService {
 
     @Transactional
     public PostDTO getArticleBySlug(String slug, boolean incrementView) {
-        Post post = postRepository.findBySlug(slug)
+        Post post = postRepository.findBySlugAndIsDeletedFalse(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài viết không tồn tại với slug: " + slug));
 
         if (incrementView) {
@@ -109,7 +109,7 @@ public class NewsService {
         // Nạp danh sách các bài cùng Tuyến bài điều tra / phóng sự nếu có
         if (post.getSeriesName() != null && !post.getSeriesName().isBlank()) {
             List<PostDTO> seriesSiblings = postRepository
-                    .findBySeriesNameAndStatusOrderBySeriesOrderAsc(post.getSeriesName(), PostStatus.PUBLISHED)
+                    .findBySeriesNameAndStatusAndIsDeletedFalseOrderBySeriesOrderAsc(post.getSeriesName(), PostStatus.PUBLISHED)
                     .stream()
                     .map(p -> PostDTO.builder()
                             .id(p.getId())
@@ -193,6 +193,9 @@ public class NewsService {
                 .viewsCount(post.getViewsCount())
                 .commentsCount(commentsCount)
                 .status(post.getStatus().name())
+                .isDeleted(post.getIsDeleted())
+                .deletedAt(post.getDeletedAt())
+                .deletedBy(post.getDeletedBy())
                 .categoryName(post.getCategory() != null ? post.getCategory().getName() : "")
                 .categorySlug(post.getCategory() != null ? post.getCategory().getSlug() : "")
                 .authorName(

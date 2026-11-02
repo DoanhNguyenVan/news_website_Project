@@ -49,8 +49,8 @@ public class CommentService {
                 .or(() -> userRepository.findByEmail(currentUsername))
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thông tin tài khoản người dùng!"));
 
-        if ("BLOCKED".equalsIgnoreCase(user.getStatus())) {
-            throw new IllegalArgumentException("Tài khoản của bạn đã bị tạm khóa chức năng bình luận!");
+        if ("BLOCKED".equalsIgnoreCase(user.getStatus()) || Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new IllegalArgumentException("Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động!");
         }
 
         if (dto.getPostId() == null) {

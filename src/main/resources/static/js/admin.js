@@ -9,6 +9,7 @@ let allCategoriesList = [];
 let autoSaveInterval = null;
 let currentDraftHistory = [];
 const EYE_ICON_SVG = `<svg class="eye-icon-svg inline-block shrink-0" viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-7.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/></svg>`;
+const TRASH_ICON_SVG = `<svg class="trash-icon-svg inline-block shrink-0 align-middle" viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.5C9.44772 2.5 9 2.94772 9 3.5V4H5C4.44772 4 4 4.44772 4 5C4 5.55228 4.44772 6 5 6H19C19.5523 6 20 5.55228 20 5C20 4.44772 19.5523 4 19 4H15V3.5C15 2.94772 14.5523 2.5 14 2.5H10ZM6.09545 7.5L6.92045 18.225C7.03577 19.7242 8.28913 20.875 9.79195 20.875H14.2081C15.7109 20.875 16.9642 19.7242 17.0795 18.225L17.9045 7.5H6.09545ZM9.75 10C10.1642 10 10.5 10.3358 10.5 10.75V16.75C10.5 17.1642 10.1642 17.5 9.75 17.5C9.33579 17.5 9 17.1642 9 16.75V10.75C9 10.3358 9.33579 10 9.75 10ZM12 10C12.4142 10 12.75 10.3358 12.75 10.75V16.75C12.75 17.1642 12.4142 17.5 12 17.5C11.5858 17.5 11.25 17.1642 11.25 16.75V10.75C11.25 10.3358 11.5858 10 12 10ZM14.25 10C14.6642 10 15 10.3358 15 10.75V16.75C15 17.1642 14.6642 17.5 14.25 17.5C13.8358 17.5 13.5 17.1642 13.5 16.75V10.75C13.5 10.3358 13.8358 10 14.25 10Z"/></svg>`;
 
 /* ========================================================
  * ANIMATE-UI MOTION & PERFORMANCE HELPERS (GPU-COMPOSITED)
@@ -569,6 +570,30 @@ async function loadDashboardData() {
       animateCountNumber('stat-total-categories', stats.totalCategories || 0);
       const commEl = document.getElementById('stat-total-comments') || document.getElementById('stat-pending-comments');
       if (commEl) animateCountNumber(commEl.id, stats.totalComments || 0);
+
+      // Cập nhật số lượng bài viết trong thùng rác (nếu có badge)
+      const trashBadge = document.getElementById('badge-trash-count');
+      if (trashBadge) {
+        const tc = stats.trashPosts || 0;
+        if (tc > 0) {
+          trashBadge.innerText = tc;
+          trashBadge.classList.remove('hidden');
+        } else {
+          trashBadge.classList.add('hidden');
+        }
+      }
+
+      // Cập nhật số lượng chuyên mục trong thùng rác
+      const catTrashBadge = document.getElementById('badge-cat-trash-count');
+      if (catTrashBadge) {
+        const ctc = stats.trashCategories || 0;
+        if (ctc > 0) {
+          catTrashBadge.innerText = ctc;
+          catTrashBadge.classList.remove('hidden');
+        } else {
+          catTrashBadge.classList.add('hidden');
+        }
+      }
     }
     const topPosts = await loadDashboardTopArticles();
     if (getUserRole() === 'SUPER_ADMIN') {
@@ -1264,10 +1289,19 @@ function filterPostsByStatus(status) {
   currentPostsPage = 0;
   const buttons = document.querySelectorAll('.post-filter-btn');
   buttons.forEach(btn => {
-    if (btn.getAttribute('data-status') === status) {
-      btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm';
+    const btnStatus = btn.getAttribute('data-status');
+    if (btnStatus === status) {
+      if (status === 'TRASH') {
+        btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white shadow-sm flex items-center gap-1.5';
+      } else {
+        btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm flex items-center gap-1.5';
+      }
     } else {
-      btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200';
+      if (btnStatus === 'TRASH') {
+        btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-rose-600 hover:bg-rose-50 border border-slate-200 flex items-center gap-1.5';
+      } else {
+        btn.className = 'post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200';
+      }
     }
   });
   loadPostsTable(globalSearchKeyword, 0);
@@ -1284,7 +1318,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
 
   try {
     const postsData = await ApiService.getAdminPosts(currentPostStatus, currentPostsPage, POSTS_PAGE_SIZE);
-    let posts = postsData || [];
+    let posts = (postsData && Array.isArray(postsData.content)) ? postsData.content : (Array.isArray(postsData) ? postsData : []);
     const role = getUserRole();
 
     // Data Scoping: AUTHOR only views their own posts
@@ -1306,8 +1340,8 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
       );
     }
 
-    totalPostsCount = postsData.totalElements ?? posts.length;
-    totalPostsPages = postsData.totalPages ?? Math.max(1, Math.ceil(totalPostsCount / POSTS_PAGE_SIZE));
+    totalPostsCount = (postsData && postsData.totalElements !== undefined) ? postsData.totalElements : posts.length;
+    totalPostsPages = (postsData && postsData.totalPages !== undefined) ? postsData.totalPages : Math.max(1, Math.ceil(totalPostsCount / POSTS_PAGE_SIZE));
 
     renderPostsPagination(currentPostsPage, totalPostsPages, totalPostsCount);
 
@@ -1319,7 +1353,10 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
     table.innerHTML = posts.map(p => {
       // Standardized Badge Colors (#22c55e success, #f59e0b pending, #ef4444 rejected)
       let statusBadge = '';
-      if (p.status === 'PUBLISHED') {
+      if (p.isDeleted || currentPostStatus === 'TRASH') {
+        const deletedInfo = p.deletedBy ? ` (Bởi @${p.deletedBy})` : '';
+        statusBadge = `<span class="px-2.5 py-1 text-xs font-extrabold text-rose-700 bg-rose-100 border border-rose-200 rounded-full inline-flex items-center gap-1.5" title="Đã chuyển vào thùng rác${deletedInfo}">${TRASH_ICON_SVG} <span>Thùng rác</span></span>`;
+      } else if (p.status === 'PUBLISHED') {
         statusBadge = `<span class="px-2.5 py-1 text-xs font-extrabold text-emerald-700 bg-emerald-100 border border-emerald-200 rounded-full">Đã xuất bản</span>`;
       } else if (p.status === 'PENDING_APPROVAL') {
         statusBadge = `<span class="px-2.5 py-1 text-xs font-extrabold text-amber-700 bg-amber-100 border border-amber-200 rounded-full">Chờ duyệt</span>`;
@@ -1331,7 +1368,9 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
 
       // Spotlight / Trending columns
       let spotlightCol = '';
-      if (role === 'AUTHOR' || role === 'EDITOR') {
+      if (p.isDeleted || currentPostStatus === 'TRASH') {
+        spotlightCol = `<span class="text-slate-400 text-xs italic">Đã lưu trữ</span>`;
+      } else if (role === 'AUTHOR' || role === 'EDITOR') {
         const spBadge = p.isSpotlight ? '<span class="text-amber-600 font-bold">Spotlight</span>' : '<span class="text-slate-300">—</span>';
         const trBadge = p.isTrending ? '<span class="text-rose-600 font-bold">Trend</span>' : '<span class="text-slate-300">—</span>';
         spotlightCol = `<div class="text-xs font-medium flex items-center gap-1.5">${spBadge} / ${trBadge}</div>`;
@@ -1353,9 +1392,21 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
         `;
       }
 
-      // Actions Column based on RBAC matrix: SUPER_ADMIN và EDITOR_IN_CHIEF có quyền duyệt bài xuất bản
+      // Actions Column based on RBAC matrix & Soft delete status
       let actionsHtml = '';
-      if (role === 'SUPER_ADMIN' || role === 'EDITOR_IN_CHIEF') {
+      if (p.isDeleted || currentPostStatus === 'TRASH') {
+        const canHardDelete = (role === 'SUPER_ADMIN' || role === 'EDITOR_IN_CHIEF');
+        actionsHtml = `
+          <button onclick="handleRestorePost(${p.id}, this)" title="Khôi phục bài viết về trạng thái bình thường" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded border border-emerald-200 animate-press cursor-pointer flex items-center gap-1">
+            <span>♻️</span> Khôi phục
+          </button>
+          ${canHardDelete ? `
+            <button onclick="handleHardDeletePost(${p.id}, this)" title="Xóa vĩnh viễn bài viết khỏi cơ sở dữ liệu" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded animate-press cursor-pointer flex items-center gap-1">
+              ${TRASH_ICON_SVG} Xóa hẳn
+            </button>
+          ` : ''}
+        `;
+      } else if (role === 'SUPER_ADMIN' || role === 'EDITOR_IN_CHIEF') {
         actionsHtml = `
           ${p.status !== 'PUBLISHED' ? `
             <button onclick="handleApprovePost(${p.id}, this)" title="Duyệt & Xuất bản" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded border border-emerald-200 animate-press cursor-pointer">
@@ -1370,7 +1421,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
           <button onclick="handleEditPost(${p.id})" title="Chỉnh sửa bài viết" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 animate-press cursor-pointer">
             Sửa
           </button>
-          <button onclick="handleDeletePost(${p.id}, this)" title="Xóa bài viết" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
+          <button onclick="handleDeletePost(${p.id}, this)" title="Chuyển vào thùng rác" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
             Xóa
           </button>
         `;
@@ -1388,7 +1439,7 @@ async function loadPostsTable(searchFilter = globalSearchKeyword, targetPage = n
             <button onclick="handleEditPost(${p.id})" title="Chỉnh sửa bài viết" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 animate-press cursor-pointer">
               Sửa
             </button>
-            <button onclick="handleDeletePost(${p.id}, this)" title="Xóa bài viết" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
+            <button onclick="handleDeletePost(${p.id}, this)" title="Chuyển vào thùng rác" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
               Xóa
             </button>
           `;
@@ -1758,7 +1809,7 @@ async function handleSavePost(e) {
 }
 
 async function handleDeletePost(id, btnEl = null) {
-  if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn bài viết #${id}?`)) return;
+  if (!confirm(`Bạn có chắc chắn muốn chuyển bài viết #${id} vào thùng rác?\n(Dữ liệu và bình luận vẫn được bảo toàn, bạn có thể khôi phục bất cứ lúc nào trong tab Thùng rác)`)) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -1766,13 +1817,53 @@ async function handleDeletePost(id, btnEl = null) {
       await new Promise(r => setTimeout(r, 220));
     }
     await ApiService.deletePost(id);
-    if (window.Toast) Toast.success(`Đã xóa bài viết #${id}!`);
-    else alert(`Đã xóa bài viết #${id}!`);
+    if (window.Toast) Toast.success(`Đã chuyển bài viết #${id} vào thùng rác!`);
+    else alert(`Đã chuyển bài viết #${id} vào thùng rác!`);
     loadPostsTable();
     loadDashboardData();
   } catch (err) {
-    if (window.Toast) Toast.error("Lỗi khi xóa bài viết!");
-    else alert("Lỗi khi xóa bài viết!");
+    if (window.Toast) Toast.error(err.message || "Lỗi khi chuyển bài viết vào thùng rác!");
+    else alert(err.message || "Lỗi khi chuyển bài viết vào thùng rác!");
+  }
+}
+
+async function handleRestorePost(id, btnEl = null) {
+  try {
+    if (btnEl) {
+      btnEl.innerHTML = `<span class="inline-block animate-spin mr-1">↻</span> Đang khôi phục...`;
+      btnEl.disabled = true;
+    }
+    await ApiService.restorePost(id);
+    if (window.Toast) Toast.success(`Đã khôi phục bài viết #${id} thành công!`);
+    else alert(`Đã khôi phục bài viết #${id} thành công!`);
+    loadPostsTable();
+    loadDashboardData();
+  } catch (err) {
+    if (window.Toast) Toast.error(err.message || "Lỗi khi khôi phục bài viết!");
+    else alert(err.message || "Lỗi khi khôi phục bài viết!");
+    if (btnEl) {
+      btnEl.innerHTML = `<span>♻️</span> Khôi phục`;
+      btnEl.disabled = false;
+    }
+  }
+}
+
+async function handleHardDeletePost(id, btnEl = null) {
+  if (!confirm(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn XÓA VĨNH VIỄN bài viết #${id}?\nThao tác này KHÔNG THỂ HOÀN TÁC và sẽ xóa sạch bài viết cũng như bình luận liên quan khỏi hệ thống!`)) return;
+  try {
+    const row = btnEl ? btnEl.closest('tr') : null;
+    if (row) {
+      row.classList.add('row-exit-animate');
+      await new Promise(r => setTimeout(r, 220));
+    }
+    await ApiService.hardDeletePost(id);
+    if (window.Toast) Toast.success(`Đã xóa vĩnh viễn bài viết #${id} khỏi hệ thống!`);
+    else alert(`Đã xóa vĩnh viễn bài viết #${id} khỏi hệ thống!`);
+    loadPostsTable();
+    loadDashboardData();
+  } catch (err) {
+    if (window.Toast) Toast.error(err.message || "Lỗi khi xóa vĩnh viễn bài viết!");
+    else alert(err.message || "Lỗi khi xóa vĩnh viễn bài viết!");
   }
 }
 
@@ -1845,6 +1936,30 @@ async function loadCategoriesDropdown() {
   }
 }
 
+let currentCategoryStatus = 'ACTIVE';
+
+function filterCategoriesByStatus(status) {
+  currentCategoryStatus = status;
+  const buttons = document.querySelectorAll('.cat-filter-btn');
+  buttons.forEach(btn => {
+    const s = btn.getAttribute('data-cat-status');
+    if (s === status) {
+      if (status === 'TRASH') {
+        btn.className = 'cat-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white shadow-sm flex items-center gap-1.5';
+      } else {
+        btn.className = 'cat-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm';
+      }
+    } else {
+      if (s === 'TRASH') {
+        btn.className = 'cat-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-rose-600 hover:bg-rose-50 border border-slate-200 flex items-center gap-1.5';
+      } else {
+        btn.className = 'cat-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200';
+      }
+    }
+  });
+  loadCategoriesTable();
+}
+
 async function loadCategoriesTable() {
   const table = document.getElementById('admin-categories-table');
   if (!table) return;
@@ -1852,30 +1967,54 @@ async function loadCategoriesTable() {
   renderTableSkeleton('admin-categories-table', 5, 4);
 
   try {
-    const categories = await ApiService.getCategories();
-    allCategoriesList = categories || [];
+    const isTrash = (currentCategoryStatus === 'TRASH');
+    const categories = await ApiService.getAdminCategories(isTrash);
+    if (!isTrash) {
+      allCategoriesList = categories || [];
+    }
 
     if (!categories || categories.length === 0) {
-      table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">Chưa có danh mục nào.</td></tr>`;
+      const emptyMsg = isTrash ? 'Thùng rác chuyên mục đang trống.' : 'Chưa có danh mục nào.';
+      table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">${emptyMsg}</td></tr>`;
       return;
     }
 
-    table.innerHTML = categories.map(c => `
-      <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-        <td class="p-3.5 text-xs font-mono font-bold text-slate-400">#${c.id}</td>
-        <td class="p-3.5 font-bold text-slate-900">${c.name}</td>
-        <td class="p-3.5 text-xs text-blue-600 font-mono">${c.slug}</td>
-        <td class="p-3.5 text-xs text-slate-500 max-w-xs truncate">${c.description || '-'}</td>
-        <td class="p-3.5 text-right whitespace-nowrap">
+    table.innerHTML = categories.map(c => {
+      let actionsHtml = '';
+      let statusBadge = '';
+      if (isTrash) {
+        statusBadge = `<span class="ml-2 px-1.5 py-0.5 text-[10px] font-bold bg-rose-100 text-rose-700 rounded-md border border-rose-200 inline-flex items-center gap-1">${TRASH_ICON_SVG} <span>Đã xóa</span></span>`;
+        actionsHtml = `
+          <button onclick="handleRestoreCategory(${c.id}, '${escapeHtml(c.name)}', this)" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs rounded border border-emerald-200 mr-1 animate-press cursor-pointer flex-inline items-center gap-1" title="Khôi phục chuyên mục">
+            <span>♻️</span> Khôi phục
+          </button>
+          <button onclick="handleHardDeleteCategory(${c.id}, '${escapeHtml(c.name)}', this)" class="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded animate-press cursor-pointer flex-inline items-center gap-1" title="Xóa vĩnh viễn chuyên mục">
+            ${TRASH_ICON_SVG} Xóa hẳn
+          </button>
+        `;
+      } else {
+        actionsHtml = `
           <button onclick="handleEditCategory(${c.id}, '${escapeHtml(c.name)}', '${escapeHtml(c.slug)}', '${escapeHtml(c.description || '')}')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded border border-blue-200 mr-1 animate-press cursor-pointer">
             Sửa
           </button>
-          <button onclick="handleDeleteCategory(${c.id}, '${escapeHtml(c.name)}', this)" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer">
+          <button onclick="handleDeleteCategory(${c.id}, '${escapeHtml(c.name)}', this)" class="px-2.5 py-1 bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs rounded border border-red-200 animate-press cursor-pointer" title="Chuyển vào thùng rác">
             Xóa
           </button>
-        </td>
-      </tr>
-    `).join('');
+        `;
+      }
+
+      return `
+        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+          <td class="p-3.5 text-xs font-mono font-bold text-slate-400">#${c.id}</td>
+          <td class="p-3.5 font-bold text-slate-900">${c.name} ${statusBadge}</td>
+          <td class="p-3.5 text-xs text-blue-600 font-mono">${c.slug}</td>
+          <td class="p-3.5 text-xs text-slate-500 max-w-xs truncate">${c.description || '-'}</td>
+          <td class="p-3.5 text-right whitespace-nowrap">
+            ${actionsHtml}
+          </td>
+        </tr>
+      `;
+    }).join('');
   } catch (err) {
     table.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Lỗi nạp danh mục!</td></tr>`;
   }
@@ -1923,7 +2062,7 @@ async function handleSaveCategory(e) {
 }
 
 async function handleDeleteCategory(id, name, btnEl = null) {
-  if (!confirm(`Bạn có chắc muốn xóa chuyên mục "${name}"?`)) return;
+  if (!confirm(`Bạn có chắc muốn chuyển chuyên mục "${name}" vào thùng rác?\n(Các bài viết liên kết vẫn được bảo toàn dữ liệu, bạn có thể khôi phục bất cứ lúc nào)`)) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -1931,14 +2070,56 @@ async function handleDeleteCategory(id, name, btnEl = null) {
       await new Promise(r => setTimeout(r, 220));
     }
     await ApiService.deleteCategory(id);
-    if (window.Toast) Toast.success(`Đã xóa chuyên mục "${name}"!`);
-    else alert(`Đã xóa chuyên mục "${name}"!`);
+    if (window.Toast) Toast.success(`Đã chuyển chuyên mục "${name}" vào thùng rác!`);
+    else alert(`Đã chuyển chuyên mục "${name}" vào thùng rác!`);
     loadCategoriesTable();
     loadCategoriesDropdown();
     loadDashboardData();
   } catch (err) {
-    if (window.Toast) Toast.error("Lỗi khi xóa chuyên mục!");
-    else alert("Lỗi khi xóa chuyên mục!");
+    if (window.Toast) Toast.error(err.message || "Lỗi khi xóa chuyên mục!");
+    else alert(err.message || "Lỗi khi xóa chuyên mục!");
+  }
+}
+
+async function handleRestoreCategory(id, name, btnEl = null) {
+  try {
+    if (btnEl) {
+      btnEl.innerHTML = `<span class="inline-block animate-spin mr-1">↻</span> Đang khôi phục...`;
+      btnEl.disabled = true;
+    }
+    await ApiService.restoreCategory(id);
+    if (window.Toast) Toast.success(`Đã khôi phục chuyên mục "${name}"!`);
+    else alert(`Đã khôi phục chuyên mục "${name}"!`);
+    loadCategoriesTable();
+    loadCategoriesDropdown();
+    loadDashboardData();
+  } catch (err) {
+    if (window.Toast) Toast.error(err.message || "Lỗi khi khôi phục chuyên mục!");
+    else alert(err.message || "Lỗi khi khôi phục chuyên mục!");
+    if (btnEl) {
+      btnEl.innerHTML = `<span>♻️</span> Khôi phục`;
+      btnEl.disabled = false;
+    }
+  }
+}
+
+async function handleHardDeleteCategory(id, name, btnEl = null) {
+  if (!confirm(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn XÓA VĨNH VIỄN chuyên mục "${name}"?\nThao tác này KHÔNG THỂ HOÀN TÁC.`)) return;
+  try {
+    const row = btnEl ? btnEl.closest('tr') : null;
+    if (row) {
+      row.classList.add('row-exit-animate');
+      await new Promise(r => setTimeout(r, 220));
+    }
+    await ApiService.hardDeleteCategory(id);
+    if (window.Toast) Toast.success(`Đã xóa vĩnh viễn chuyên mục "${name}" khỏi hệ thống!`);
+    else alert(`Đã xóa vĩnh viễn chuyên mục "${name}" khỏi hệ thống!`);
+    loadCategoriesTable();
+    loadCategoriesDropdown();
+    loadDashboardData();
+  } catch (err) {
+    if (window.Toast) Toast.error(err.message || "Lỗi khi xóa vĩnh viễn chuyên mục!");
+    else alert(err.message || "Lỗi khi xóa vĩnh viễn chuyên mục!");
   }
 }
 
@@ -2304,10 +2485,21 @@ async function handleToggleHideComment(id, newStatus) {
 }
 
 async function handleDeleteComment(id, btnEl = null) {
-  if (window.Toast) {
-    Toast.warning("Hệ thống bảo toàn dữ liệu: Quản trị viên chỉ có quyền Ẩn bình luận, không có quyền xóa vĩnh viễn.");
-  } else {
-    alert("Hệ thống bảo toàn dữ liệu: Quản trị viên chỉ có quyền Ẩn bình luận, không có quyền xóa vĩnh viễn.");
+  if (!confirm(`Bạn có chắc chắn muốn xóa bình luận #${id}? (Bình luận sẽ được xóa mềm và bảo toàn dữ liệu trong hệ thống)`)) return;
+  try {
+    const row = btnEl ? btnEl.closest('tr') : null;
+    if (row) {
+      row.classList.add('row-exit-animate');
+      await new Promise(r => setTimeout(r, 220));
+    }
+    await ApiService.deleteComment(id);
+    if (window.Toast) Toast.success(`Đã xóa mềm bình luận #${id}!`);
+    else alert(`Đã xóa mềm bình luận #${id}!`);
+    loadCommentsTable();
+    loadDashboardData();
+  } catch (err) {
+    if (window.Toast) Toast.error(err.message || "Lỗi khi xóa bình luận!");
+    else alert(err.message || "Lỗi khi xóa bình luận!");
   }
 }
 

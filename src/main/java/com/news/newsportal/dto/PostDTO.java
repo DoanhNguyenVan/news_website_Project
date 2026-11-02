@@ -35,6 +35,9 @@ public class PostDTO {
     private Long commentsCount = 0L;
     private String status;
     private String rejectionReason;
+    private Boolean isDeleted;
+    private LocalDateTime deletedAt;
+    private String deletedBy;
     private String categoryName;
     private String categorySlug;
     private String authorName;

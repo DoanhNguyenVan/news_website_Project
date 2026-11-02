@@ -92,7 +92,25 @@ public class EditorialCMSController {
             Authentication authentication) {
         String username = authentication != null ? authentication.getName() : null;
         adminPostService.deletePost(id, username);
-        return ResponseEntity.ok(ApiResponse.success("Xóa bài viết thành công"));
+        return ResponseEntity.ok(ApiResponse.success("Đã chuyển bài viết vào thùng rác"));
+    }
+
+    @PostMapping("/posts/{id}/restore")
+    public ResponseEntity<ApiResponse<String>> restorePost(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : null;
+        adminPostService.restorePost(id, username);
+        return ResponseEntity.ok(ApiResponse.success("Khôi phục bài viết thành công"));
+    }
+
+    @DeleteMapping("/posts/{id}/permanent")
+    public ResponseEntity<ApiResponse<String>> hardDeletePost(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : null;
+        adminPostService.hardDeletePost(id, username);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa vĩnh viễn bài viết khỏi hệ thống"));
     }
 
     @PatchMapping("/posts/{id}/spotlight")

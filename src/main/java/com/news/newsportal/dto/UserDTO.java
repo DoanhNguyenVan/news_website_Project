@@ -20,5 +20,7 @@ public class UserDTO {
     private String role;
     private String status;
     private String authProvider;
+    private Boolean isDeleted;
+    private LocalDateTime deletedAt;
     private LocalDateTime createdAt;
 }

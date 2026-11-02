@@ -27,6 +27,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
         List<UserDTO> dtos = userRepository.findAll().stream()
+                .filter(u -> !Boolean.TRUE.equals(u.getIsDeleted()))
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success(dtos));
@@ -103,8 +104,11 @@ public class UserController {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Không thể xóa tài khoản Quản trị viên tối cao (admin)!"));
         }
-        userRepository.deleteById(id);
-        return ResponseEntity.ok(ApiResponse.success("Xóa người dùng thành công"));
+        user.setIsDeleted(true);
+        user.setDeletedAt(java.time.LocalDateTime.now());
+        user.setStatus("INACTIVE");
+        userRepository.save(user);
+        return ResponseEntity.ok(ApiResponse.success("Xóa người dùng thành công (Xóa mềm)"));
     }
 
     private UserDTO mapToDTO(User u) {
@@ -117,6 +121,8 @@ public class UserController {
                 .role(u.getRole() != null ? u.getRole().name() : "USER")
                 .status(u.getStatus())
                 .authProvider(u.getAuthProvider())
+                .isDeleted(Boolean.TRUE.equals(u.getIsDeleted()))
+                .deletedAt(u.getDeletedAt())
                 .createdAt(u.getCreatedAt())
                 .build();
     }

@@ -64,6 +64,13 @@ public class User {
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE";
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

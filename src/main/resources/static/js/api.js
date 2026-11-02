@@ -268,7 +268,30 @@ const ApiService = {
     const json = await this.request(`${CONFIG.API_BASE_URL}/admin/posts/${id}`, {
       method: "DELETE"
     });
-    return json ? json.success : false;
+    if (!json || json.success === false) {
+      throw new Error((json && json.message) ? json.message : "Xóa bài viết thất bại!");
+    }
+    return true;
+  },
+
+  async restorePost(id) {
+    const json = await this.request(`${CONFIG.API_BASE_URL}/admin/posts/${id}/restore`, {
+      method: "POST"
+    });
+    if (!json || json.success === false) {
+      throw new Error((json && json.message) ? json.message : "Khôi phục bài viết thất bại!");
+    }
+    return true;
+  },
+
+  async hardDeletePost(id) {
+    const json = await this.request(`${CONFIG.API_BASE_URL}/admin/posts/${id}/permanent`, {
+      method: "DELETE"
+    });
+    if (!json || json.success === false) {
+      throw new Error((json && json.message) ? json.message : "Xóa vĩnh viễn bài viết thất bại!");
+    }
+    return true;
   },
 
   async updatePostStatus(id, status, reason = '') {
@@ -311,10 +334,39 @@ const ApiService = {
     return json;
   },
 
+  async getAdminCategories(trash = false) {
+    const url = `${CONFIG.API_BASE_URL}/admin/categories${trash ? '?trash=true' : ''}`;
+    const json = await this.request(url);
+    return (json && json.data) ? json.data : [];
+  },
+
   async deleteCategory(id) {
     const json = await this.request(`${CONFIG.API_BASE_URL}/admin/categories/${id}`, {
       method: "DELETE"
     });
+    if (!json || json.success === false) {
+      throw new Error((json && json.message) ? json.message : "Chuyển chuyên mục vào thùng rác thất bại!");
+    }
+    return json;
+  },
+
+  async restoreCategory(id) {
+    const json = await this.request(`${CONFIG.API_BASE_URL}/admin/categories/${id}/restore`, {
+      method: "POST"
+    });
+    if (!json || json.success === false) {
+      throw new Error((json && json.message) ? json.message : "Khôi phục chuyên mục thất bại!");
+    }
+    return json;
+  },
+
+  async hardDeleteCategory(id) {
+    const json = await this.request(`${CONFIG.API_BASE_URL}/admin/categories/${id}/permanent`, {
+      method: "DELETE"
+    });
+    if (!json || json.success === false) {
+      throw new Error((json && json.message) ? json.message : "Xóa vĩnh viễn chuyên mục thất bại!");
+    }
     return json;
   },
 

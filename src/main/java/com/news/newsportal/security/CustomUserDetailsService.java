@@ -21,8 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .or(() -> userRepository.findByEmail(usernameOrEmail))
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + usernameOrEmail));
 
-        boolean enabled = !"BANNED".equalsIgnoreCase(user.getStatus()) && !"INACTIVE".equalsIgnoreCase(user.getStatus());
-        boolean accountNonLocked = !"BANNED".equalsIgnoreCase(user.getStatus());
+        boolean enabled = !"BANNED".equalsIgnoreCase(user.getStatus()) && !"INACTIVE".equalsIgnoreCase(user.getStatus()) && !Boolean.TRUE.equals(user.getIsDeleted());
+        boolean accountNonLocked = !"BANNED".equalsIgnoreCase(user.getStatus()) && !Boolean.TRUE.equals(user.getIsDeleted());
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

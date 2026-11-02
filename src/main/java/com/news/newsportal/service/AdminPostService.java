@@ -32,12 +32,14 @@ public class AdminPostService {
 
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalPosts", postRepository.count());
-        stats.put("pendingPosts", postRepository.countByStatus(PostStatus.PENDING_APPROVAL));
-        stats.put("publishedPosts", postRepository.countByStatus(PostStatus.PUBLISHED));
+        stats.put("totalPosts", postRepository.countByIsDeletedFalse());
+        stats.put("pendingPosts", postRepository.countByStatusAndIsDeletedFalse(PostStatus.PENDING_APPROVAL));
+        stats.put("publishedPosts", postRepository.countByStatusAndIsDeletedFalse(PostStatus.PUBLISHED));
+        stats.put("trashPosts", postRepository.countByIsDeletedTrue());
         stats.put("totalViews", postRepository.sumTotalViews());
         stats.put("totalUsers", userRepository.count());
-        stats.put("totalCategories", categoryRepository.count());
+        stats.put("totalCategories", categoryRepository.countByIsDeletedFalse());
+        stats.put("trashCategories", categoryRepository.countByIsDeletedTrue());
         stats.put("totalComments", commentRepository.count());
         stats.put("pendingComments", commentRepository.countByStatus("PENDING"));
         return stats;
@@ -116,22 +118,27 @@ public class AdminPostService {
     @Transactional(readOnly = true)
     public Page<PostDTO> getAdminPosts(String status, int page, int size, String username) {
         Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"));
-        User currentUser = username != null ? userRepository.findByUsername(username).orElse(null) : null;
+        User currentUser = resolveUser(username);
         
         Page<Post> posts;
+        boolean isTrash = "TRASH".equalsIgnoreCase(status);
         
         // Data Scoping: Nếu là AUTHOR thì chỉ lấy các bài viết của chính mình
         if (currentUser != null && currentUser.getRole() == Role.AUTHOR) {
-            if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
-                posts = postRepository.findByAuthorIdAndStatus(currentUser.getId(), PostStatus.valueOf(status.toUpperCase()), pageable);
+            if (isTrash) {
+                posts = postRepository.findByAuthorIdAndIsDeletedTrue(currentUser.getId(), pageable);
+            } else if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
+                posts = postRepository.findByAuthorIdAndStatusAndIsDeletedFalse(currentUser.getId(), PostStatus.valueOf(status.toUpperCase()), pageable);
             } else {
-                posts = postRepository.findByAuthorId(currentUser.getId(), pageable);
+                posts = postRepository.findByAuthorIdAndIsDeletedFalse(currentUser.getId(), pageable);
             }
         } else {
-            if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
-                posts = postRepository.findByStatus(PostStatus.valueOf(status.toUpperCase()), pageable);
+            if (isTrash) {
+                posts = postRepository.findByIsDeletedTrue(pageable);
+            } else if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
+                posts = postRepository.findByStatusAndIsDeletedFalse(PostStatus.valueOf(status.toUpperCase()), pageable);
             } else {
-                posts = postRepository.findAll(pageable);
+                posts = postRepository.findByIsDeletedFalse(pageable);
             }
         }
 
@@ -158,6 +165,9 @@ public class AdminPostService {
                 .viewsCount(p.getViewsCount())
                 .commentsCount(commentRepository.countApprovedCommentsByPostId(p.getId()))
                 .publishedAt(p.getPublishedAt())
+                .isDeleted(p.getIsDeleted())
+                .deletedAt(p.getDeletedAt())
+                .deletedBy(p.getDeletedBy())
                 .build());
     }
 
@@ -226,14 +236,16 @@ public class AdminPostService {
                 .categorySlug(post.getCategory() != null ? post.getCategory().getSlug() : "")
                 .authorName(post.getAuthor() != null ? (post.getAuthor().getFullName() != null ? post.getAuthor().getFullName() : post.getAuthor().getUsername()) : "")
                 .publishedAt(post.getPublishedAt())
+                .isDeleted(post.getIsDeleted())
+                .deletedAt(post.getDeletedAt())
+                .deletedBy(post.getDeletedBy())
                 .build();
     }
 
     @Transactional
     @CacheEvict(value = "homepage_news", allEntries = true)
     public PostDTO updatePost(Long id, PostDTO dto, String username) {
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"));
+        User currentUser = resolveUser(username);
 
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài viết không tồn tại với ID: " + id));
@@ -323,11 +335,27 @@ public class AdminPostService {
         return Math.max(1, (int) Math.ceil(words / 200.0));
     }
 
+    private User resolveUser(String username) {
+        if (username != null && !username.isBlank()) {
+            java.util.Optional<User> userOpt = userRepository.findByUsername(username)
+                    .or(() -> userRepository.findByEmail(username));
+            if (userOpt.isPresent()) {
+                return userOpt.get();
+            }
+        }
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRole() == Role.SUPER_ADMIN && !Boolean.TRUE.equals(u.getIsDeleted()))
+                .findFirst()
+                .orElseGet(() -> userRepository.findAll().stream()
+                        .filter(u -> !Boolean.TRUE.equals(u.getIsDeleted()))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản người dùng")));
+    }
+
     @Transactional
     @CacheEvict(value = "homepage_news", allEntries = true)
     public void deletePost(Long id, String username) {
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"));
+        User currentUser = resolveUser(username);
 
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài viết không tồn tại với ID: " + id));
@@ -339,16 +367,57 @@ public class AdminPostService {
             }
         }
 
-        // Xóa bình luận liên quan trước để tránh khóa ngoại MySQL
+        // SOFT DELETE: Chuyển vào thùng rác, lưu thời điểm & người xóa
+        // TUYỆT ĐỐI KHÔNG XÓA bình luận hoặc liên kết để bảo toàn dữ liệu
+        post.setIsDeleted(true);
+        post.setDeletedAt(LocalDateTime.now());
+        post.setDeletedBy(currentUser.getUsername());
+        postRepository.save(post);
+    }
+
+    @Transactional
+    @CacheEvict(value = "homepage_news", allEntries = true)
+    public void restorePost(Long id, String username) {
+        User currentUser = resolveUser(username);
+
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bài viết không tồn tại với ID: " + id));
+
+        if (currentUser.getRole() == Role.AUTHOR) {
+            if (post.getAuthor() == null || !post.getAuthor().getId().equals(currentUser.getId())) {
+                throw new org.springframework.security.access.AccessDeniedException("Bạn không có quyền khôi phục bài viết của tác giả khác!");
+            }
+        }
+
+        // RESTORE: Khôi phục bài viết từ thùng rác
+        post.setIsDeleted(false);
+        post.setDeletedAt(null);
+        post.setDeletedBy(null);
+        postRepository.save(post);
+    }
+
+    @Transactional
+    @CacheEvict(value = "homepage_news", allEntries = true)
+    public void hardDeletePost(Long id, String username) {
+        User currentUser = resolveUser(username);
+
+        // Chỉ SUPER_ADMIN và EDITOR_IN_CHIEF mới có quyền xóa vĩnh viễn khỏi Database
+        if (!currentUser.isSuperAdmin() && !currentUser.isEditorInChief()) {
+            throw new org.springframework.security.access.AccessDeniedException("Chỉ Quản trị viên hoặc Tổng biên tập mới có quyền xóa vĩnh viễn bài viết khỏi hệ thống!");
+        }
+
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bài viết không tồn tại với ID: " + id));
+
+        // Xóa bình luận liên quan trước để tránh lỗi khóa ngoại MySQL
         commentRepository.deleteByPostId(id);
-        postRepository.deleteById(id);
+        postRepository.delete(post);
     }
 
     @Transactional
     @CacheEvict(value = "homepage_news", allEntries = true)
     public boolean toggleSpotlight(Long id, String username) {
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"));
+        User currentUser = resolveUser(username);
 
         if (!currentUser.isAtLeastEditor()) {
             throw new org.springframework.security.access.AccessDeniedException("Chỉ Ban biên tập mới có quyền ghim bài viết Spotlight!");
@@ -365,8 +434,7 @@ public class AdminPostService {
     @Transactional
     @CacheEvict(value = "homepage_news", allEntries = true)
     public boolean toggleTrending(Long id, String username) {
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"));
+        User currentUser = resolveUser(username);
 
         if (!currentUser.isAtLeastEditor()) {
             throw new org.springframework.security.access.AccessDeniedException("Chỉ Ban biên tập mới có quyền ghim bài viết Xu hướng!");

@@ -23,6 +23,8 @@ public class CommentDTO {
     private String status;
     private Integer likesCount;
     private Integer dislikesCount;
+    private Boolean isDeleted;
+    private LocalDateTime deletedAt;
     private LocalDateTime createdAt;
     
     @Builder.Default

@@ -60,8 +60,13 @@ public class CommentAdminController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteComment(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("Hệ thống không cho phép xóa bình luận. Quản trị viên chỉ có quyền Ẩn bình luận vi phạm!"));
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bình luận không tồn tại"));
+        comment.setIsDeleted(true);
+        comment.setDeletedAt(java.time.LocalDateTime.now());
+        comment.setStatus("HIDDEN");
+        commentRepository.save(comment);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa mềm bình luận thành công"));
     }
 
     private CommentDTO mapToDTO(Comment c) {
@@ -77,6 +82,8 @@ public class CommentAdminController {
                 .status(c.getStatus() != null ? c.getStatus() : "APPROVED")
                 .likesCount(c.getLikesCount() != null ? c.getLikesCount() : 0)
                 .dislikesCount(c.getDislikesCount() != null ? c.getDislikesCount() : 0)
+                .isDeleted(Boolean.TRUE.equals(c.getIsDeleted()))
+                .deletedAt(c.getDeletedAt())
                 .createdAt(c.getCreatedAt())
                 .build();
     }

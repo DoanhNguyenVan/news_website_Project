@@ -41,8 +41,14 @@ public class SuperAdminController {
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        userRepository.deleteById(id);
-        return ResponseEntity.ok("Đã xóa người dùng thành công");
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setIsDeleted(true);
+            user.setDeletedAt(java.time.LocalDateTime.now());
+            user.setStatus("INACTIVE");
+            userRepository.save(user);
+        }
+        return ResponseEntity.ok("Đã xóa người dùng thành công (Xóa mềm)");
     }
 
     // --- 2. CRUD CATEGORIES ---

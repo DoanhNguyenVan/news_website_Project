@@ -8,29 +8,29 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND (c.status = 'APPROVED' OR c.status IS NULL) ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND (c.status = 'APPROVED' OR c.status IS NULL) AND (c.isDeleted = false OR c.isDeleted IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findByPostIdApproved(@org.springframework.data.repository.query.Param("postId") Long postId);
 
-    @org.springframework.data.jpa.repository.Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND (c.status = 'APPROVED' OR c.status IS NULL)")
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId AND (c.status = 'APPROVED' OR c.status IS NULL) AND (c.isDeleted = false OR c.isDeleted IS NULL)")
     Long countApprovedCommentsByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
 
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.status = :status ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND c.status = :status AND (c.isDeleted = false OR c.isDeleted IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findByPostIdAndStatusOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("postId") Long postId, @org.springframework.data.repository.query.Param("status") String status);
 
     List<Comment> findByStatusOrderByCreatedAtDesc(String status);
 
     List<Comment> findAllByOrderByCreatedAtDesc();
 
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE (c.isDeleted = false OR c.isDeleted IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findAllWithPostOrderByCreatedAtDesc();
 
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE c.status = :status ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE c.status = :status AND (c.isDeleted = false OR c.isDeleted IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findByStatusWithPostOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("status") String status);
 
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE c.status IN ('HIDDEN', 'REJECTED', 'SPAM') ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c LEFT JOIN FETCH c.post WHERE (c.status IN ('HIDDEN', 'REJECTED', 'SPAM') OR c.isDeleted = true) ORDER BY c.createdAt DESC")
     List<Comment> findHiddenWithPostOrderByCreatedAtDesc();
 
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId AND (c.isDeleted = false OR c.isDeleted IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findByPostIdOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("postId") Long postId);
 
     @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
@@ -41,7 +41,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @org.springframework.data.jpa.repository.Query("DELETE FROM Comment c WHERE c.post.id = :postId")
     void deleteByPostId(@org.springframework.data.repository.query.Param("postId") Long postId);
 
-    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.user.id = :userId ORDER BY c.createdAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT c FROM Comment c WHERE c.user.id = :userId AND (c.isDeleted = false OR c.isDeleted IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findByUserIdOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("userId") Long userId);
 
     long countByUserId(Long userId);

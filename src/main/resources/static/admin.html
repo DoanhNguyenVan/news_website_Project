@@ -532,6 +532,10 @@
             <button onclick="filterPostsByStatus('PENDING_APPROVAL')" class="post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="PENDING_APPROVAL">Chờ duyệt</button>
             <button onclick="filterPostsByStatus('DRAFT')" class="post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="DRAFT">Bản nháp</button>
             <button onclick="filterPostsByStatus('REJECTED')" class="post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="REJECTED">Bị từ chối</button>
+            <button onclick="filterPostsByStatus('TRASH')" class="post-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-rose-600 hover:bg-rose-50 border border-slate-200 flex items-center gap-1.5 transition" data-status="TRASH" title="Danh sách bài viết trong Thùng rác (Xóa mềm)">
+              <svg class="w-3.5 h-3.5 inline-block shrink-0 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.5C9.44772 2.5 9 2.94772 9 3.5V4H5C4.44772 4 4 4.44772 4 5C4 5.55228 4.44772 6 5 6H19C19.5523 6 20 5.55228 20 5C20 4.44772 19.5523 4 19 4H15V3.5C15 2.94772 14.5523 2.5 14 2.5H10ZM6.09545 7.5L6.92045 18.225C7.03577 19.7242 8.28913 20.875 9.79195 20.875H14.2081C15.7109 20.875 16.9642 19.7242 17.0795 18.225L17.9045 7.5H6.09545ZM9.75 10C10.1642 10 10.5 10.3358 10.5 10.75V16.75C10.5 17.1642 10.1642 17.5 9.75 17.5C9.33579 17.5 9 17.1642 9 16.75V10.75C9 10.3358 9.33579 10 9.75 10ZM12 10C12.4142 10 12.75 10.3358 12.75 10.75V16.75C12.75 17.1642 12.4142 17.5 12 17.5C11.5858 17.5 11.25 17.1642 11.25 16.75V10.75C11.25 10.3358 11.5858 10 12 10ZM14.25 10C14.6642 10 15 10.3358 15 10.75V16.75C15 17.1642 14.6642 17.5 14.25 17.5C13.8358 17.5 13.5 17.1642 13.5 16.75V10.75C13.5 10.3358 13.8358 10 14.25 10Z"/></svg>
+              <span>Thùng rác</span> <span id="badge-trash-count" class="hidden px-1.5 py-0.2 text-[10px] bg-rose-500 text-white rounded-full font-bold"></span>
+            </button>
           </div>
 
           <!-- Add Button & Import Word Button -->
@@ -909,9 +913,16 @@
 
           <!-- BẢNG DANH SÁCH CHUYÊN MỤC -->
           <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h4 class="text-xs font-bold text-slate-700 uppercase">Danh Sách Tất Cả Chuyên Mục</h4>
-              <button onclick="loadCategoriesTable()" class="text-xs text-blue-600 hover:underline font-semibold">🔄 Làm mới</button>
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-500 uppercase mr-1">Lọc:</span>
+                <button onclick="filterCategoriesByStatus('ACTIVE')" class="cat-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm" data-cat-status="ACTIVE">Đang hoạt động</button>
+                <button onclick="filterCategoriesByStatus('TRASH')" class="cat-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-rose-600 hover:bg-rose-50 border border-slate-200 flex items-center gap-1.5 transition" data-cat-status="TRASH" title="Chuyên mục trong Thùng rác (Xóa mềm)">
+                  <svg class="w-3.5 h-3.5 inline-block shrink-0 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.5C9.44772 2.5 9 2.94772 9 3.5V4H5C4.44772 4 4 4.44772 4 5C4 5.55228 4.44772 6 5 6H19C19.5523 6 20 5.55228 20 5C20 4.44772 19.5523 4 19 4H15V3.5C15 2.94772 14.5523 2.5 14 2.5H10ZM6.09545 7.5L6.92045 18.225C7.03577 19.7242 8.28913 20.875 9.79195 20.875H14.2081C15.7109 20.875 16.9642 19.7242 17.0795 18.225L17.9045 7.5H6.09545ZM9.75 10C10.1642 10 10.5 10.3358 10.5 10.75V16.75C10.5 17.1642 10.1642 17.5 9.75 17.5C9.33579 17.5 9 17.1642 9 16.75V10.75C9 10.3358 9.33579 10 9.75 10ZM12 10C12.4142 10 12.75 10.3358 12.75 10.75V16.75C12.75 17.1642 12.4142 17.5 12 17.5C11.5858 17.5 11.25 17.1642 11.25 16.75V10.75C11.25 10.3358 11.5858 10 12 10ZM14.25 10C14.6642 10 15 10.3358 15 10.75V16.75C15 17.1642 14.6642 17.5 14.25 17.5C13.8358 17.5 13.5 17.1642 13.5 16.75V10.75C13.5 10.3358 13.8358 10 14.25 10Z"/></svg>
+                  <span>Thùng rác</span> <span id="badge-cat-trash-count" class="hidden px-1.5 py-0.2 text-[10px] bg-rose-500 text-white rounded-full font-bold"></span>
+                </button>
+              </div>
+              <button onclick="loadCategoriesTable()" class="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1">🔄 Làm mới</button>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
@@ -1609,8 +1620,9 @@
 
     <div class="h-4 w-[1px] bg-slate-700 mx-1"></div>
 
-    <button type="button" onclick="deleteSelectedImg()" title="Xóa hình ảnh này" class="p-1.5 px-2.5 bg-rose-600/90 hover:bg-rose-600 text-white font-bold rounded-xl flex items-center gap-1 transition shadow">
-      <span>🗑️</span> Xóa
+    <button type="button" onclick="deleteSelectedImg()" title="Xóa hình ảnh này" class="p-1.5 px-2.5 bg-rose-600/90 hover:bg-rose-600 text-white font-bold rounded-xl flex items-center gap-1.5 transition shadow">
+      <svg class="w-3.5 h-3.5 inline-block shrink-0 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.5C9.44772 2.5 9 2.94772 9 3.5V4H5C4.44772 4 4 4.44772 4 5C4 5.55228 4.44772 6 5 6H19C19.5523 6 20 5.55228 20 5C20 4.44772 19.5523 4 19 4H15V3.5C15 2.94772 14.5523 2.5 14 2.5H10ZM6.09545 7.5L6.92045 18.225C7.03577 19.7242 8.28913 20.875 9.79195 20.875H14.2081C15.7109 20.875 16.9642 19.7242 17.0795 18.225L17.9045 7.5H6.09545ZM9.75 10C10.1642 10 10.5 10.3358 10.5 10.75V16.75C10.5 17.1642 10.1642 17.5 9.75 17.5C9.33579 17.5 9 17.1642 9 16.75V10.75C9 10.3358 9.33579 10 9.75 10ZM12 10C12.4142 10 12.75 10.3358 12.75 10.75V16.75C12.75 17.1642 12.4142 17.5 12 17.5C11.5858 17.5 11.25 17.1642 11.25 16.75V10.75C11.25 10.3358 11.5858 10 12 10ZM14.25 10C14.6642 10 15 10.3358 15 10.75V16.75C15 17.1642 14.6642 17.5 14.25 17.5C13.8358 17.5 13.5 17.1642 13.5 16.75V10.75C13.5 10.3358 13.8358 10 14.25 10Z"/></svg>
+      <span>Xóa</span>
     </button>
   </div>
 

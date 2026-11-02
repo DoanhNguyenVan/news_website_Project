@@ -105,6 +105,10 @@ public class AuthService {
                 .or(() -> userRepository.findByEmail(identifier))
                 .orElseThrow(() -> new BadCredentialsException("Tên đăng nhập hoặc mật khẩu không chính xác"));
 
+        if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new BadCredentialsException("Tài khoản này đã bị khóa hoặc xóa khỏi hệ thống.");
+        }
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), loginRequest.getPassword())
         );
@@ -260,6 +264,10 @@ public class AuthService {
                 user.setFullName(name);
             }
             userRepository.save(user);
+        }
+
+        if (Boolean.TRUE.equals(user.getIsDeleted())) {
+            throw new org.springframework.security.access.AccessDeniedException("Tài khoản này đã bị xóa hoặc ngừng kích hoạt!");
         }
 
         if ("BANNED".equalsIgnoreCase(user.getStatus()) || "INACTIVE".equalsIgnoreCase(user.getStatus())) {

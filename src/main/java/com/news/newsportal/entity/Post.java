@@ -87,6 +87,16 @@ public class Post {
     @Column(name = "rejection_reason", length = 500)
     private String rejectionReason;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by", length = 100)
+    private String deletedBy;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;

@@ -44,6 +44,13 @@ public class Category {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

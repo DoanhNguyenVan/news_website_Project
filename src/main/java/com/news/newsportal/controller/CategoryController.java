@@ -21,8 +21,12 @@ public class CategoryController {
     private final com.news.newsportal.repository.PostRepository postRepository;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Category>>> getAllCategories() {
-        return ResponseEntity.ok(ApiResponse.success(categoryRepository.findAll()));
+    public ResponseEntity<ApiResponse<List<Category>>> getAllCategories(
+            @RequestParam(required = false, defaultValue = "false") boolean trash) {
+        List<Category> categories = trash
+                ? categoryRepository.findByIsDeletedTrue()
+                : categoryRepository.findByIsDeletedFalse();
+        return ResponseEntity.ok(ApiResponse.success(categories));
     }
 
     @GetMapping("/{id}")
@@ -70,13 +74,32 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteCategory(@PathVariable Long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Danh mục không tồn tại với ID: " + id);
-        }
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Danh mục không tồn tại với ID: " + id));
+        category.setIsDeleted(true);
+        category.setDeletedAt(java.time.LocalDateTime.now());
+        categoryRepository.save(category);
+        return ResponseEntity.ok(ApiResponse.success("Đã chuyển chuyên mục vào thùng rác"));
+    }
+
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<ApiResponse<String>> restoreCategory(@PathVariable Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Danh mục không tồn tại với ID: " + id));
+        category.setIsDeleted(false);
+        category.setDeletedAt(null);
+        categoryRepository.save(category);
+        return ResponseEntity.ok(ApiResponse.success("Khôi phục chuyên mục thành công"));
+    }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<ApiResponse<String>> hardDeleteCategory(@PathVariable Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Danh mục không tồn tại với ID: " + id));
         if (postRepository.existsByCategoryId(id)) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Không thể xóa: Danh mục này đang chứa bài viết. Vui lòng chuyển bài viết sang danh mục khác trước!"));
+            return ResponseEntity.badRequest().body(ApiResponse.error("Không thể xóa vĩnh viễn: Vẫn còn bài viết liên kết với danh mục này!"));
         }
-        categoryRepository.deleteById(id);
-        return ResponseEntity.ok(ApiResponse.success("Xóa danh mục thành công"));
+        categoryRepository.delete(category);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa vĩnh viễn chuyên mục khỏi hệ thống"));
     }
 }
