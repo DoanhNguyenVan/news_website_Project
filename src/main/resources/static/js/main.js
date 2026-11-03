@@ -2056,8 +2056,8 @@ async function loadPublicBanners() {
             <div class="absolute top-2 right-2 z-10">
               <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-white backdrop-blur-xs">Tài trợ</span>
             </div>
-            <a href="${ad.targetUrl}" target="_blank" onclick="ApiService.trackAdClick(${ad.id})" class="block max-h-36 sm:max-h-44 w-full overflow-hidden">
-              <img src="${ad.imageUrl}" loading="lazy" decoding="async" alt="${ad.title}" class="w-full h-full object-cover group-hover:opacity-95 transition">
+            <a href="${ad.targetUrl}" target="_blank" onclick="ApiService.trackAdClick(${ad.id})" class="block w-full overflow-hidden">
+              <img src="${ad.imageUrl}" loading="lazy" decoding="async" alt="${ad.title}" class="w-full h-auto object-contain block group-hover:opacity-95 transition">
             </a>
           </div>
         `;
