@@ -641,7 +641,7 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
     </div>
   ` : '';
 
-  // Render Cột Phải (Side Trending Cards - Tối ưu chiều cao 420px vừa vặn 1 khung hình)
+  // Render Cột Phải (Side Trending Cards - Cân đối hiển thị đầy đủ Chuyên mục, Ngày đăng, Tiêu đề, Tác giả, Bình luận, Lượt xem)
   const sideHtml = sidePosts.map(post => {
     const sideImg = post.thumbnailUrl || DEFAULT_PLACEHOLDER_IMG;
     const sideByline = post.byline || post.authorName || 'Tòa soạn';
@@ -653,17 +653,17 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
     return `
       <div class="news-card-hover group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer overflow-hidden flex-1 lg:h-[calc(50%-6px)] justify-between" onclick="location.href='article-detail.html?slug=${post.slug}'">
         <!-- Ảnh nằm ngang bên trên tỉ lệ gọn gàng (Horizontal banner on top) -->
-        <div class="w-full h-24 sm:h-28 relative overflow-hidden shrink-0 border-b border-slate-100 dark:border-slate-700/60">
+        <div class="w-full h-24 sm:h-[105px] relative overflow-hidden shrink-0 border-b border-slate-100 dark:border-slate-700/60">
           <img src="${sideImg}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${post.title}">
           ${isTrend ? '<span class="absolute top-2 left-2 bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-xs tracking-wider z-10">Trend</span>' : ''}
           ${getBookmarkBtnHtml(post.id, 'absolute top-2 right-2 z-10')}
         </div>
 
-        <!-- Khối thông tin vừa vặn bên dưới -->
-        <div class="p-3 flex flex-col justify-between flex-1 min-h-0 space-y-1">
-          <div class="space-y-1">
+        <!-- Khối thông tin hiển thị đầy đủ: Chuyên mục, Ngày đăng, Tiêu đề, Tác giả, Bình luận, Lượt xem -->
+        <div class="p-2.5 sm:p-3 flex flex-col justify-between flex-1 min-h-0">
+          <div>
             <!-- Metadata: Chuyên mục • Ngày đăng • Thời gian đọc -->
-            <div class="flex items-center gap-1.5 text-[10px] text-slate-400 flex-wrap">
+            <div class="flex items-center gap-1.5 text-[10px] text-slate-400 flex-wrap mb-1">
               <span class="font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">${post.categoryName || 'Tin tức'}</span>
               ${sideSeriesBadge}
               <span class="text-slate-300 dark:text-slate-600">•</span>
@@ -673,16 +673,13 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
             </div>
 
             <!-- Tiêu đề bài viết -->
-            <h3 class="font-serif text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
+            <h3 class="font-serif text-xs sm:text-[13px] lg:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
               ${post.title}
             </h3>
-
-            <!-- Tóm tắt Sapo 1 dòng tinh gọn -->
-            ${post.sapo ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-relaxed hidden sm:block">${post.sapo}</p>` : ''}
           </div>
 
-          <!-- Thanh chân thẻ: Tác giả bên trái, Bình luận & Lượt xem bên phải -->
-          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 mt-auto gap-2">
+          <!-- Thanh chân thẻ: Tác giả bên trái, Bình luận & Lượt xem bên phải (Luôn hiển thị đầy đủ) -->
+          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 mt-1 gap-2">
             <!-- Tên tác giả / Bút danh -->
             <div class="flex items-center gap-1 min-w-0 flex-1 mr-1" title="Tác giả: ${sideByline}">
               <svg class="w-2.5 h-2.5 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -704,9 +701,9 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
   }).join('');
 
   container.innerHTML = `
-    <!-- CỘT TRÁI (HERO SPOTLIGHT SLIDER - 65% / 8 COLS - TỈ LỆ BANNER 16:9 CHUẨN 420PX) -->
+    <!-- CỘT TRÁI (HERO SPOTLIGHT SLIDER - 65% / 8 COLS - TỈ LỆ BANNER 16:9 CHUẨN 425PX) -->
     <div class="lg:col-span-8">
-      <div id="hero-slider" class="relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 h-[360px] sm:h-[400px] lg:h-[420px] select-none group">
+      <div id="hero-slider" class="relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 h-[360px] sm:h-[400px] lg:h-[425px] select-none group">
         <!-- Khung Trượt (Track) -->
         <div id="hero-slider-track" class="flex w-full h-full transition-transform duration-500 ease-out will-change-transform">
           ${slidesHtml}
@@ -716,8 +713,8 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
       </div>
     </div>
 
-    <!-- CỘT PHẢI (CỤM XU HƯỚNG TRENDING - 35% / 4 COLS - ĐỒNG BỘ CHIỀU CAO 420PX) -->
-    <div class="lg:col-span-4 flex flex-col gap-3 justify-between lg:h-[420px]">
+    <!-- CỘT PHẢI (CỤM XU HƯỚNG TRENDING - 35% / 4 COLS - ĐỒNG BỘ CHIỀU CAO 425PX) -->
+    <div class="lg:col-span-4 flex flex-col gap-3 justify-between lg:h-[425px]">
       ${sideHtml}
     </div>
   `;
