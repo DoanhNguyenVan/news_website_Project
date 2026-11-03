@@ -22,5 +22,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     void deleteByUserIdAndPostId(Long userId, Long postId);
 
     long countByUserId(Long userId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT b.post.category.id FROM Bookmark b WHERE b.user.id = :userId AND b.post.isDeleted = false AND b.post.category IS NOT NULL")
+    List<Long> findCategoryIdsByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
 }
 

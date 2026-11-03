@@ -183,11 +183,23 @@ public class PersonalizationService {
         // Nếu là độc giả có tài khoản
         if (username != null && !"anonymousUser".equalsIgnoreCase(username)) {
             userRepository.findByUsername(username).ifPresent(user -> {
-                // 1. Lấy chuyên mục từ sở thích chủ động
-                List<Long> prefCatIds = topicPreferenceRepository.findCategoryIdsByUserId(user.getId());
-                targetCategoryIds.addAll(prefCatIds);
+                // 1. Lấy chuyên mục từ bài viết đã lưu (Bookmark) - Tín hiệu quan tâm sâu sắc nhất
+                List<Long> bookmarkCatIds = bookmarkRepository.findCategoryIdsByUserId(user.getId());
+                for (Long cid : bookmarkCatIds) {
+                    if (!targetCategoryIds.contains(cid)) {
+                        targetCategoryIds.add(cid);
+                    }
+                }
 
-                // 2. Lấy thêm top 3 chuyên mục đọc nhiều nhất từ lịch sử
+                // 2. Lấy chuyên mục từ sở thích chủ động (Preferences)
+                List<Long> prefCatIds = topicPreferenceRepository.findCategoryIdsByUserId(user.getId());
+                for (Long cid : prefCatIds) {
+                    if (!targetCategoryIds.contains(cid)) {
+                        targetCategoryIds.add(cid);
+                    }
+                }
+
+                // 3. Lấy thêm top 3 chuyên mục đọc nhiều nhất từ lịch sử (History)
                 List<Long> historyCatIds = readingHistoryRepository.findTopCategoryIdsByUserId(user.getId(), PageRequest.of(0, 3));
                 for (Long cid : historyCatIds) {
                     if (!targetCategoryIds.contains(cid)) {
@@ -195,7 +207,7 @@ public class PersonalizationService {
                     }
                 }
 
-                // 3. Lấy 10 bài đọc gần nhất để không đề xuất lặp
+                // 4. Lấy 10 bài đọc gần nhất để ưu tiên bài mới lạ chưa đọc
                 List<Long> recentReadIds = readingHistoryRepository.findReadPostIdsByUserId(user.getId(), PageRequest.of(0, 10));
                 excludePostIds.addAll(recentReadIds);
             });
@@ -214,16 +226,45 @@ public class PersonalizationService {
             );
         }
 
-        // Bổ sung nếu chưa đủ số lượng bài yêu cầu (Fallback trending/latest)
+        // Bổ sung nếu chưa đủ số lượng bài yêu cầu (Fallback đa tầng đảm bảo 100% LUÔN ĐỦ limit bài)
         if (candidatePosts.size() < limit) {
             Set<Long> alreadyPicked = candidatePosts.stream().map(Post::getId).collect(Collectors.toSet());
-            alreadyPicked.addAll(excludePostIds);
+            Set<Long> excluded = new HashSet<>(excludePostIds);
 
-            List<Post> fallbacks = postRepository.findByStatusOrderByViewsCountDesc(PostStatus.PUBLISHED, PageRequest.of(0, limit));
-            for (Post fp : fallbacks) {
-                if (alreadyPicked.add(fp.getId())) {
+            // Tầng 1: Bù thêm các bài xuất bản nhiều lượt xem nhất chưa đọc (quét rộng 30 bài)
+            List<Post> topPosts = postRepository.findByStatusAndIsDeletedFalseOrderByViewsCountDesc(
+                    PostStatus.PUBLISHED, PageRequest.of(0, 30));
+            for (Post fp : topPosts) {
+                if (!alreadyPicked.contains(fp.getId()) && !excluded.contains(fp.getId())) {
+                    alreadyPicked.add(fp.getId());
                     candidatePosts.add(fp);
                     if (candidatePosts.size() >= limit) break;
+                }
+            }
+
+            // Tầng 2: Bù thêm các bài viết mới xuất bản nhất chưa đọc (quét rộng 30 bài)
+            if (candidatePosts.size() < limit) {
+                List<Post> latestPosts = postRepository.findByStatusAndIsDeletedFalseOrderByPublishedAtDesc(
+                        PostStatus.PUBLISHED, PageRequest.of(0, 30));
+                for (Post lp : latestPosts) {
+                    if (!alreadyPicked.contains(lp.getId()) && !excluded.contains(lp.getId())) {
+                        alreadyPicked.add(lp.getId());
+                        candidatePosts.add(lp);
+                        if (candidatePosts.size() >= limit) break;
+                    }
+                }
+            }
+
+            // Tầng 3 (Bảo đảm tuyệt đối luôn đủ 6 bài): Nếu kho bài ít hoặc các bài đều nằm trong exclude,
+            // cho phép nới lỏng để lấp đầy trọn vẹn số lượng bài yêu cầu
+            if (candidatePosts.size() < limit) {
+                List<Post> allPublished = postRepository.findByStatusAndIsDeletedFalseOrderByPublishedAtDesc(
+                        PostStatus.PUBLISHED, PageRequest.of(0, 30));
+                for (Post ap : allPublished) {
+                    if (alreadyPicked.add(ap.getId())) {
+                        candidatePosts.add(ap);
+                        if (candidatePosts.size() >= limit) break;
+                    }
                 }
             }
         }
