@@ -579,9 +579,9 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
         <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
         ${getBookmarkBtnHtml(post.id, 'absolute top-4 right-4 sm:top-5 sm:right-5 z-20')}
         
-        <div class="relative z-10 p-5 sm:p-7 space-y-2.5">
+        <div class="relative z-10 p-4 sm:p-5 lg:p-6 space-y-2">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="inline-block bg-red-600 text-white text-[11px] font-black uppercase px-3 py-1 rounded-md tracking-wider shadow-xs">
+            <span class="inline-block bg-red-600 text-white text-[11px] font-black uppercase px-2.5 py-0.5 rounded-md tracking-wider shadow-xs">
               ${post.categoryName || 'Tiêu Điểm'}
             </span>
             ${formatBadge}
@@ -589,7 +589,7 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
             <span class="text-xs text-slate-300 font-medium">${relTime}</span>
           </div>
 
-          <h2 class="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-tight text-white group-hover/slide:text-blue-200 transition line-clamp-2 sm:line-clamp-3">
+          <h2 class="font-serif text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-white group-hover/slide:text-blue-200 transition line-clamp-2">
             ${post.title}
           </h2>
 
@@ -597,7 +597,7 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
             ${post.sapo || ''}
           </p>
 
-          <div class="flex items-center gap-4 text-xs text-slate-300 pt-1 border-t border-white/15 flex-wrap">
+          <div class="flex items-center gap-3 text-[11px] sm:text-xs text-slate-300 pt-1 border-t border-white/15 flex-wrap">
             <span>Bút danh: <strong class="text-white">${byline}</strong></span>
             <span>•</span>
             ${getCommentBadgeHtml(post.id, post.commentsCount, 'text-slate-300')}
@@ -629,19 +629,19 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
     </button>
 
     <!-- Dots Pagination & Bộ đếm -->
-    <div class="absolute bottom-4 right-5 sm:right-7 z-20 flex items-center gap-2 bg-slate-950/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15">
+    <div class="absolute bottom-3 right-4 sm:right-6 z-20 flex items-center gap-2 bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15">
       <div id="hero-slider-dots" class="flex items-center gap-1.5">
         ${sliderPosts.map((_, i) => `
-          <button type="button" aria-label="Đến bài ${i + 1}" onclick="event.stopPropagation(); heroGoToSlide(${i});" class="hero-dot ${i === 0 ? 'w-6 h-2 rounded-full bg-red-600' : 'w-2 h-2 rounded-full bg-white/40 hover:bg-white/80'} transition-all duration-300 cursor-pointer"></button>
+          <button type="button" aria-label="Đến bài ${i + 1}" onclick="event.stopPropagation(); heroGoToSlide(${i});" class="hero-dot ${i === 0 ? 'w-5 h-1.5 rounded-full bg-red-600' : 'w-1.5 h-1.5 rounded-full bg-white/40 hover:bg-white/80'} transition-all duration-300 cursor-pointer"></button>
         `).join('')}
       </div>
-      <span id="hero-slider-counter" class="text-[11px] font-bold text-slate-300 font-mono pl-1 border-l border-white/20">
+      <span id="hero-slider-counter" class="text-[10px] font-bold text-slate-300 font-mono pl-1 border-l border-white/20">
         1 / ${sliderPosts.length}
       </span>
     </div>
   ` : '';
 
-  // Render Cột Phải (Side Trending Cards - Layout ảnh ngang bên trên theo góp ý người dùng)
+  // Render Cột Phải (Side Trending Cards - Tối ưu chiều cao 420px vừa vặn 1 khung hình)
   const sideHtml = sidePosts.map(post => {
     const sideImg = post.thumbnailUrl || DEFAULT_PLACEHOLDER_IMG;
     const sideByline = post.byline || post.authorName || 'Tòa soạn';
@@ -651,20 +651,20 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
     const isTrend = Boolean(post.isTrending);
 
     return `
-      <div class="news-card-hover group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer overflow-hidden flex-1 justify-between" onclick="location.href='article-detail.html?slug=${post.slug}'">
-        <!-- Ảnh nằm ngang bên trên (Horizontal banner on top) -->
-        <div class="w-full h-36 sm:h-40 relative overflow-hidden shrink-0 border-b border-slate-100 dark:border-slate-700/60">
+      <div class="news-card-hover group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer overflow-hidden flex-1 lg:h-[calc(50%-6px)] justify-between" onclick="location.href='article-detail.html?slug=${post.slug}'">
+        <!-- Ảnh nằm ngang bên trên tỉ lệ gọn gàng (Horizontal banner on top) -->
+        <div class="w-full h-24 sm:h-28 relative overflow-hidden shrink-0 border-b border-slate-100 dark:border-slate-700/60">
           <img src="${sideImg}" loading="lazy" decoding="async" onerror="handleImgError(this)" class="news-img-zoom w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${post.title}">
-          ${isTrend ? '<span class="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-xs tracking-wider z-10">Trend</span>' : ''}
-          ${getBookmarkBtnHtml(post.id, 'absolute top-2.5 right-2.5 z-10')}
+          ${isTrend ? '<span class="absolute top-2 left-2 bg-rose-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-xs tracking-wider z-10">Trend</span>' : ''}
+          ${getBookmarkBtnHtml(post.id, 'absolute top-2 right-2 z-10')}
         </div>
 
-        <!-- Khối thông tin rộng rãi bên dưới (Ample space below) -->
-        <div class="p-3.5 sm:p-4 flex flex-col justify-between flex-1 space-y-2">
-          <div class="space-y-1.5">
+        <!-- Khối thông tin vừa vặn bên dưới -->
+        <div class="p-3 flex flex-col justify-between flex-1 min-h-0 space-y-1">
+          <div class="space-y-1">
             <!-- Metadata: Chuyên mục • Ngày đăng • Thời gian đọc -->
-            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 flex-wrap">
-              <span class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">${post.categoryName || 'Tin tức'}</span>
+            <div class="flex items-center gap-1.5 text-[10px] text-slate-400 flex-wrap">
+              <span class="font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">${post.categoryName || 'Tin tức'}</span>
               ${sideSeriesBadge}
               <span class="text-slate-300 dark:text-slate-600">•</span>
               <span class="whitespace-nowrap">${sideRelTime}</span>
@@ -673,26 +673,24 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
             </div>
 
             <!-- Tiêu đề bài viết -->
-            <h3 class="font-serif text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
+            <h3 class="font-serif text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
               ${post.title}
             </h3>
 
-            <!-- Tóm tắt Sapo -->
-            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-              ${post.sapo || ''}
-            </p>
+            <!-- Tóm tắt Sapo 1 dòng tinh gọn -->
+            ${post.sapo ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-relaxed hidden sm:block">${post.sapo}</p>` : ''}
           </div>
 
           <!-- Thanh chân thẻ: Tác giả bên trái, Bình luận & Lượt xem bên phải -->
-          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 mt-auto gap-2">
-            <!-- Tên tác giả / Bút danh rõ ràng không bị đè ép -->
-            <div class="flex items-center gap-1.5 min-w-0 flex-1 mr-1" title="Tác giả: ${sideByline}">
-              <svg class="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-              <span class="font-semibold text-slate-700 dark:text-slate-200 truncate text-[11px]">${sideByline}</span>
+          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-700/60 mt-auto gap-2">
+            <!-- Tên tác giả / Bút danh -->
+            <div class="flex items-center gap-1 min-w-0 flex-1 mr-1" title="Tác giả: ${sideByline}">
+              <svg class="w-2.5 h-2.5 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              <span class="font-semibold text-slate-700 dark:text-slate-200 truncate text-[10px]">${sideByline}</span>
             </div>
 
             <!-- Cụm bình luận & Lượt xem tách biệt, cân đối -->
-            <div class="flex items-center gap-2.5 shrink-0 whitespace-nowrap text-slate-400 dark:text-slate-400">
+            <div class="flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-400 dark:text-slate-400">
               ${getCommentBadgeHtml(post.id, post.commentsCount, 'hover:text-blue-500 transition-colors')}
               <span class="text-slate-300 dark:text-slate-600">•</span>
               <span class="inline-flex items-center gap-1 hover:text-blue-500 transition-colors" title="Lượt xem: ${(post.viewsCount || 0).toLocaleString('vi-VN')}">
@@ -706,9 +704,9 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
   }).join('');
 
   container.innerHTML = `
-    <!-- CỘT TRÁI (HERO SPOTLIGHT SLIDER - 65% / 8 COLS) -->
+    <!-- CỘT TRÁI (HERO SPOTLIGHT SLIDER - 65% / 8 COLS - TỈ LỆ BANNER 16:9 CHUẨN 420PX) -->
     <div class="lg:col-span-8">
-      <div id="hero-slider" class="relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 h-[380px] sm:h-[440px] lg:h-full min-h-[460px] select-none group">
+      <div id="hero-slider" class="relative overflow-hidden rounded-2xl bg-slate-950 text-white shadow-md border border-slate-200/60 dark:border-slate-700/80 h-[360px] sm:h-[400px] lg:h-[420px] select-none group">
         <!-- Khung Trượt (Track) -->
         <div id="hero-slider-track" class="flex w-full h-full transition-transform duration-500 ease-out will-change-transform">
           ${slidesHtml}
@@ -718,8 +716,8 @@ function renderSpotlight(spotlightPosts = [], trendingPosts = [], fallbackPosts 
       </div>
     </div>
 
-    <!-- CỘT PHẢI (CỤM XU HƯỚNG TRENDING DO ADMIN TÙY CHỈNH - 35% / 4 COLS) -->
-    <div class="lg:col-span-4 flex flex-col gap-4 justify-between">
+    <!-- CỘT PHẢI (CỤM XU HƯỚNG TRENDING - 35% / 4 COLS - ĐỒNG BỘ CHIỀU CAO 420PX) -->
+    <div class="lg:col-span-4 flex flex-col gap-3 justify-between lg:h-[420px]">
       ${sideHtml}
     </div>
   `;
