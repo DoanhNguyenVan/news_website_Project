@@ -12,6 +12,91 @@ const EYE_ICON_SVG = `<svg class="eye-icon-svg inline-block shrink-0" viewBox="0
 const TRASH_ICON_SVG = `<svg class="trash-icon-svg inline-block shrink-0 align-middle" viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2.5C9.44772 2.5 9 2.94772 9 3.5V4H5C4.44772 4 4 4.44772 4 5C4 5.55228 4.44772 6 5 6H19C19.5523 6 20 5.55228 20 5C20 4.44772 19.5523 4 19 4H15V3.5C15 2.94772 14.5523 2.5 14 2.5H10ZM6.09545 7.5L6.92045 18.225C7.03577 19.7242 8.28913 20.875 9.79195 20.875H14.2081C15.7109 20.875 16.9642 19.7242 17.0795 18.225L17.9045 7.5H6.09545ZM9.75 10C10.1642 10 10.5 10.3358 10.5 10.75V16.75C10.5 17.1642 10.1642 17.5 9.75 17.5C9.33579 17.5 9 17.1642 9 16.75V10.75C9 10.3358 9.33579 10 9.75 10ZM12 10C12.4142 10 12.75 10.3358 12.75 10.75V16.75C12.75 17.1642 12.4142 17.5 12 17.5C11.5858 17.5 11.25 17.1642 11.25 16.75V10.75C11.25 10.3358 11.5858 10 12 10ZM14.25 10C14.6642 10 15 10.3358 15 10.75V16.75C15 17.1642 14.6642 17.5 14.25 17.5C13.8358 17.5 13.5 17.1642 13.5 16.75V10.75C13.5 10.3358 13.8358 10 14.25 10Z"/></svg>`;
 
 /* ========================================================
+ * TIỆN ÍCH THANH TIẾN TRÌNH & TỐI ƯU HÓA TẢI ẢNH (UPLOAD PROGRESS & COMPRESSION)
+ * ======================================================== */
+function showUploadProgress(percent = 0, title = 'Đang tải ảnh lên...') {
+  let el = document.getElementById('global-upload-progress-box');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'global-upload-progress-box';
+    el.className = 'fixed bottom-6 right-6 z-50 bg-slate-900/95 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-md border border-slate-700/80 min-w-[300px] max-w-sm transition-all duration-300 transform translate-y-0 opacity-100 flex flex-col gap-2 pointer-events-auto';
+    document.body.appendChild(el);
+  }
+  el.classList.remove('hidden', 'translate-y-4', 'opacity-0');
+  
+  const isDone = percent >= 100;
+  el.innerHTML = `
+    <div class="flex items-center justify-between text-xs font-bold">
+      <div class="flex items-center gap-2">
+        ${isDone ? '<span class="text-emerald-400 font-extrabold text-sm">✓</span>' : '<svg class="animate-spin h-3.5 w-3.5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>'}
+        <span class="${isDone ? 'text-emerald-400' : 'text-slate-200'}">${isDone ? 'Tải ảnh hoàn tất!' : title}</span>
+      </div>
+      <span class="font-mono ${isDone ? 'text-emerald-400 font-extrabold' : 'text-blue-400'}">${percent}%</span>
+    </div>
+    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700/50">
+      <div class="h-full rounded-full transition-all duration-150 ${isDone ? 'bg-emerald-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500'}" style="width: ${percent}%"></div>
+    </div>
+  `;
+
+  if (isDone) {
+    setTimeout(() => {
+      hideUploadProgress();
+    }, 1500);
+  }
+}
+
+function hideUploadProgress() {
+  const el = document.getElementById('global-upload-progress-box');
+  if (el) {
+    el.classList.add('translate-y-4', 'opacity-0');
+    setTimeout(() => {
+      el.classList.add('hidden');
+    }, 300);
+  }
+}
+
+async function optimizeImageIfNeeded(file, maxWidth = 1920, quality = 0.85) {
+  if (!file || !file.type.startsWith('image/')) return file;
+  if (file.size <= 1024 * 1024) return file;
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (blob && blob.size < file.size) {
+            const optimizedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(optimizedFile);
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ========================================================
  * ANIMATE-UI MOTION & PERFORMANCE HELPERS (GPU-COMPOSITED)
  * ======================================================== */
 function animateCountNumber(elementId, targetValue, duration = 650) {
@@ -112,21 +197,32 @@ async function initAdminDashboard() {
     return;
   }
 
-  // Xác thực token và lấy profile sạch từ Server
-  try {
-    const meData = await ApiService.getMe();
-    if (meData && meData.role) {
-      user = {
-        id: meData.id,
-        username: meData.username,
-        email: meData.email,
-        role: meData.role,
-        fullName: meData.fullName
-      };
-      localStorage.setItem('user', JSON.stringify(user));
+  // TỐI ƯU TỐC ĐỘ: Nếu đã có user trong cache -> Render giao diện ngay lập tức (<10ms)
+  // và xác thực getMe() ngầm ở background mà không làm đứng/khựng giao diện
+  if (!user) {
+    try {
+      const meData = await ApiService.getMe();
+      if (meData && meData.role) {
+        user = {
+          id: meData.id,
+          username: meData.username,
+          email: meData.email,
+          role: meData.role,
+          fullName: meData.fullName
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    } catch (e) {
+      console.warn("Lỗi kiểm tra session /auth/me:", e);
     }
-  } catch (e) {
-    console.warn("Lỗi kiểm tra session /auth/me:", e);
+  } else {
+    // Chạy đồng bộ session ngầm (non-blocking)
+    ApiService.getMe().then(meData => {
+      if (meData && meData.role && (meData.role !== user.role || meData.fullName !== user.fullName)) {
+        user = { ...user, ...meData };
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    }).catch(e => console.warn("Background session sync:", e));
   }
 
   if (!user) {
@@ -254,8 +350,21 @@ async function handleQuickAdminLogin(e) {
   const username = document.getElementById('quick-login-user').value.trim();
   const password = document.getElementById('quick-login-pass').value.trim();
   const errorBox = document.getElementById('admin-login-error');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
   errorBox.classList.add('hidden');
+
+  const origBtnText = submitBtn ? submitBtn.innerHTML : 'Đăng Nhập';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg class="animate-spin h-4 w-4 text-white inline-block mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span>Đang đăng nhập...</span>
+    `;
+  }
 
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
@@ -277,6 +386,7 @@ async function handleQuickAdminLogin(e) {
         fullName: json.data.fullName
       }));
 
+      // Chuyển thẳng vào giao diện ngay lập tức (<10ms)
       hideLoginModal();
       initAdminDashboard();
     } else {
@@ -286,6 +396,11 @@ async function handleQuickAdminLogin(e) {
   } catch (err) {
     errorBox.innerText = "Lỗi kết nối tới máy chủ!";
     errorBox.classList.remove('hidden');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnText;
+    }
   }
 }
 
@@ -1080,14 +1195,22 @@ function closeInsertImageModal() {
 
 async function uploadInsertImageModalFile(input) {
   if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
+  const rawFile = input.files[0];
+  showUploadProgress(10, "Đang tối ưu ảnh chèn bài viết...");
+
   try {
-    const res = await ApiService.uploadMedia(file);
-    if (res && res.url) {
-      document.getElementById('insert-img-url').value = res.url;
+    const file = await optimizeImageIfNeeded(rawFile, 1920, 0.85);
+    const res = await ApiService.uploadMedia(file, (percent) => {
+      showUploadProgress(percent, "Đang tải ảnh chèn bài viết...");
+    });
+    const url = res.fileUrl || res.url;
+    if (url) {
+      document.getElementById('insert-img-url').value = url;
+      showUploadProgress(100, "Tải ảnh hoàn tất!");
     }
   } catch (err) {
-    alert("Lỗi upload ảnh!");
+    hideUploadProgress();
+    alert("Lỗi upload ảnh: " + err.message);
   }
 }
 
@@ -2565,16 +2688,30 @@ function insertEditorLink() {
 
 async function uploadThumbnailFile(input) {
   if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
+  const rawFile = input.files[0];
+
+  // 1. Phản hồi tức thì 0ms: Hiển thị preview ngay lập tức
+  const previewImg = document.getElementById('thumbnail-preview-img');
+  if (previewImg) {
+    previewImg.src = URL.createObjectURL(rawFile);
+  }
+
+  showUploadProgress(10, "Đang tối ưu ảnh đại diện...");
+
   try {
-    const res = await ApiService.uploadMedia(file);
-    if (res && res.url) {
-      document.getElementById('form-post-thumbnail').value = res.url;
-      document.getElementById('thumbnail-preview-img').src = res.url;
-      alert("Tải ảnh đại diện thành công!");
+    const file = await optimizeImageIfNeeded(rawFile, 1600, 0.85);
+    const res = await ApiService.uploadMedia(file, (percent) => {
+      showUploadProgress(percent, "Đang tải ảnh đại diện lên máy chủ...");
+    });
+    const finalUrl = res.fileUrl || res.url;
+    if (finalUrl) {
+      document.getElementById('form-post-thumbnail').value = finalUrl;
+      if (previewImg) previewImg.src = finalUrl;
+      showUploadProgress(100, "Tải ảnh đại diện thành công!");
     }
   } catch (err) {
-    alert("Lỗi khi tải ảnh đại diện!");
+    hideUploadProgress();
+    alert("Lỗi khi tải ảnh đại diện: " + err.message);
   }
 }
 
@@ -2585,15 +2722,22 @@ async function uploadContentImageFile(input) {
 }
 
 async function insertImageFileToEditor(file) {
+  showUploadProgress(15, "Đang tối ưu & chèn ảnh...");
   try {
-    const res = await ApiService.uploadMedia(file);
-    if (res && res.url) {
+    const optFile = await optimizeImageIfNeeded(file, 1920, 0.85);
+    const res = await ApiService.uploadMedia(optFile, (percent) => {
+      showUploadProgress(percent, "Đang tải ảnh lên bài viết...");
+    });
+    const url = res.fileUrl || res.url;
+    if (url) {
       document.getElementById('editor-content-area').focus();
-      const imgHtml = `<img src="${res.url}" alt="Image" class="my-4 rounded-xl max-w-full shadow-md inline-block" />`;
+      const imgHtml = `<img src="${url}" alt="Image" class="my-4 rounded-xl max-w-full shadow-md inline-block" />`;
       document.execCommand('insertHTML', false, imgHtml);
+      showUploadProgress(100, "Đã chèn ảnh vào bài viết!");
     }
   } catch (err) {
-    alert("Lỗi khi tải ảnh lên editor!");
+    hideUploadProgress();
+    alert("Lỗi khi tải ảnh lên editor: " + err.message);
   }
 }
 
@@ -3067,19 +3211,33 @@ function closeAdModal() {
 
 async function uploadAdBannerFile(input) {
   if (!input.files || input.files.length === 0) return;
-  const file = input.files[0];
+  const rawFile = input.files[0];
+
+  // 1. Phản hồi tức thì 0ms: Hiển thị preview ngay lập tức
+  const preview = document.getElementById('form-ad-preview-img');
+  if (preview) {
+    preview.src = URL.createObjectURL(rawFile);
+    preview.classList.remove('hidden');
+  }
+
+  showUploadProgress(10, "Đang tối ưu ảnh banner...");
+
   try {
-    const res = await ApiService.uploadMedia(file);
+    const file = await optimizeImageIfNeeded(rawFile, 1920, 0.88);
+    const res = await ApiService.uploadMedia(file, (percent) => {
+      showUploadProgress(percent, "Đang tải ảnh banner lên máy chủ...");
+    });
     const url = res.fileUrl || res.url;
     if (url) {
       document.getElementById('form-ad-image-url').value = url;
-      const preview = document.getElementById('form-ad-preview-img');
       if (preview) {
         preview.src = url;
         preview.classList.remove('hidden');
       }
+      showUploadProgress(100, "Tải banner thành công!");
     }
   } catch (err) {
+    hideUploadProgress();
     alert("Tải ảnh banner thất bại: " + err.message);
   }
 }

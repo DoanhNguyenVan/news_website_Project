@@ -189,18 +189,45 @@ const ApiService = {
     }
   },
 
-  async uploadMedia(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    const json = await this.request(`${CONFIG.API_BASE_URL}/admin/media/upload`, {
-      method: "POST",
-      body: formData
+  uploadMedia(file, onProgress) {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${CONFIG.API_BASE_URL}/admin/media/upload`, true);
+
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      if (xhr.upload && typeof onProgress === 'function') {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            onProgress(percent);
+          }
+        };
+      }
+
+      xhr.onload = () => {
+        try {
+          const json = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && json.success && json.data) {
+            if (typeof onProgress === 'function') onProgress(100);
+            resolve(json.data);
+          } else {
+            reject(new Error((json && json.message) ? json.message : 'Tải tập tin thất bại!'));
+          }
+        } catch (err) {
+          reject(new Error('Lỗi phản hồi máy chủ: ' + xhr.statusText));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Lỗi kết nối khi tải tập tin!'));
+      xhr.send(formData);
     });
-    if (json && json.success && json.data) {
-      return json.data;
-    } else {
-      throw new Error((json && json.message) ? json.message : "Tải tập tin thất bại!");
-    }
   },
 
   /* ========================================================
@@ -447,21 +474,6 @@ const ApiService = {
   async getSystemSettings() {
     const json = await this.request(`${CONFIG.API_BASE_URL}/admin/settings`);
     return (json && json.data) ? json.data : null;
-  },
-
-  async uploadMedia(file) {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const json = await this.request(`${CONFIG.API_BASE_URL}/admin/media/upload`, {
-      method: "POST",
-      body: formData
-    });
-
-    if (json && json.success && json.data) {
-      return json.data;
-    }
-    throw new Error(json ? json.message : "Tải tập tin thất bại");
   },
 
   async importDocxPost(file) {
