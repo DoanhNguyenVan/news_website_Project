@@ -1932,7 +1932,8 @@ async function handleSavePost(e) {
 }
 
 async function handleDeletePost(id, btnEl = null) {
-  if (!confirm(`Bạn có chắc chắn muốn chuyển bài viết #${id} vào thùng rác?\n(Dữ liệu và bình luận vẫn được bảo toàn, bạn có thể khôi phục bất cứ lúc nào trong tab Thùng rác)`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`Bạn có chắc chắn muốn chuyển bài viết #${id} vào thùng rác?\n(Dữ liệu và bình luận vẫn được bảo toàn, bạn có thể khôi phục bất cứ lúc nào trong tab Thùng rác)`);
+  if (!confirmed) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -1972,7 +1973,8 @@ async function handleRestorePost(id, btnEl = null) {
 }
 
 async function handleHardDeletePost(id, btnEl = null) {
-  if (!confirm(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn XÓA VĨNH VIỄN bài viết #${id}?\nThao tác này KHÔNG THỂ HOÀN TÁC và sẽ xóa sạch bài viết cũng như bình luận liên quan khỏi hệ thống!`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn XÓA VĨNH VIỄN bài viết #${id}?\nThao tác này KHÔNG THỂ HOÀN TÁC và sẽ xóa sạch bài viết cũng như bình luận liên quan khỏi hệ thống!`);
+  if (!confirmed) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -2185,7 +2187,8 @@ async function handleSaveCategory(e) {
 }
 
 async function handleDeleteCategory(id, name, btnEl = null) {
-  if (!confirm(`Bạn có chắc muốn chuyển chuyên mục "${name}" vào thùng rác?\n(Các bài viết liên kết vẫn được bảo toàn dữ liệu, bạn có thể khôi phục bất cứ lúc nào)`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`Bạn có chắc muốn chuyển chuyên mục "${name}" vào thùng rác?\n(Các bài viết liên kết vẫn được bảo toàn dữ liệu, bạn có thể khôi phục bất cứ lúc nào)`);
+  if (!confirmed) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -2227,7 +2230,8 @@ async function handleRestoreCategory(id, name, btnEl = null) {
 }
 
 async function handleHardDeleteCategory(id, name, btnEl = null) {
-  if (!confirm(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn XÓA VĨNH VIỄN chuyên mục "${name}"?\nThao tác này KHÔNG THỂ HOÀN TÁC.`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn XÓA VĨNH VIỄN chuyên mục "${name}"?\nThao tác này KHÔNG THỂ HOÀN TÁC.`);
+  if (!confirmed) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -2433,7 +2437,8 @@ async function handleToggleUserStatus(id, currentStatus) {
 }
 
 async function handleDeleteUser(id, username) {
-  if (!confirm(`Bạn có chắc muốn xóa tài khoản "${username}"?`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`Bạn có chắc muốn xóa tài khoản "${username}"?\n(Dữ liệu người dùng sẽ được lưu trữ hoặc chuyển trạng thái theo chính sách hệ thống)`);
+  if (!confirmed) return;
   try {
     await ApiService.deleteUser(id);
     alert(`Đã xóa tài khoản "${username}"!`);
@@ -2608,7 +2613,8 @@ async function handleToggleHideComment(id, newStatus) {
 }
 
 async function handleDeleteComment(id, btnEl = null) {
-  if (!confirm(`Bạn có chắc chắn muốn xóa bình luận #${id}? (Bình luận sẽ được xóa mềm và bảo toàn dữ liệu trong hệ thống)`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`Bạn có chắc chắn muốn xóa bình luận #${id}?\n(Bình luận sẽ được xóa mềm và bảo toàn dữ liệu trong hệ thống)`);
+  if (!confirmed) return;
   try {
     const row = btnEl ? btnEl.closest('tr') : null;
     if (row) {
@@ -3278,7 +3284,8 @@ async function handleToggleAdStatus(id) {
 }
 
 async function handleDeleteAd(id) {
-  if (!confirm(`Bạn có chắc muốn xóa vĩnh viễn banner #${id}?`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`Bạn có chắc muốn xóa vĩnh viễn banner #${id}?\n(Banner sẽ bị gỡ bỏ ngay lập tức khỏi trang chủ)`);
+  if (!confirmed) return;
   try {
     await ApiService.deleteAdvertisement(id);
     loadAdvertisementsTable();
@@ -3437,7 +3444,8 @@ async function handleTogglePollStatus(id) {
 }
 
 async function handleDeletePoll(id) {
-  if (!confirm(`Bạn có chắc muốn xóa cuộc bình chọn #${id}?`)) return;
+  const confirmed = await (window.confirmModal || window.confirm)(`Bạn có chắc muốn xóa cuộc bình chọn #${id}?\n(Tất cả các lựa chọn và dữ liệu bình chọn của độc giả sẽ bị xóa khỏi hệ thống)`);
+  if (!confirmed) return;
   try {
     await ApiService.deletePoll(id);
     loadPollsTable();

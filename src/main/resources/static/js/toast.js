@@ -190,14 +190,16 @@
       position: fixed;
       inset: 0;
       z-index: 999998;
-      background: rgba(15, 23, 42, 0.55);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1rem;
       opacity: 0;
       transition: opacity 0.2s ease-out;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     .np-confirm-backdrop.np-confirm-visible {
       opacity: 1;
@@ -206,11 +208,11 @@
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
       border-radius: 1.25rem;
-      max-width: 26rem;
+      max-width: 28rem;
       width: 100%;
       padding: 1.5rem;
-      box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.2);
-      transform: scale(0.94);
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      transform: scale(0.92);
       transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .dark .np-confirm-card {
@@ -358,10 +360,166 @@
     return showToast(message, 'info', 'Thông báo');
   }
 
+  /**
+   * Modern Editorial Confirm Modal Dialog
+   * Replaces ugly browser confirm() with an elegant, responsive, dark-mode aware modal
+   * Returns a Promise<boolean>
+   */
+  function showConfirmModal(options) {
+    return new Promise((resolve) => {
+      let title = 'Xác nhận thao tác';
+      let message = '';
+      let submessage = '';
+      let type = 'warning'; // 'danger' | 'warning' | 'info'
+      let confirmText = 'Xác nhận';
+      let cancelText = 'Hủy bỏ';
+
+      if (typeof options === 'string') {
+        const parts = options.split('\n');
+        message = parts[0] || '';
+        if (parts.length > 1) {
+          submessage = parts.slice(1).join(' ').trim();
+        }
+
+        const lower = options.toLowerCase();
+        if (lower.includes('vĩnh viễn') || lower.includes('nguy hiểm') || lower.includes('không thể hoàn tác')) {
+          type = 'danger';
+          title = 'Cảnh Báo Nguy Hiểm';
+          confirmText = 'Xóa vĩnh viễn';
+        } else if (lower.includes('thùng rác')) {
+          type = 'warning';
+          title = 'Chuyển Vào Thùng Rác';
+          confirmText = 'Chuyển vào thùng rác';
+        } else if (lower.includes('xóa')) {
+          type = 'danger';
+          title = 'Xác Nhận Xóa';
+          confirmText = 'Xác nhận xóa';
+        } else {
+          type = 'info';
+          title = 'Xác Nhận Thao Tác';
+          confirmText = 'Đồng ý';
+        }
+      } else if (typeof options === 'object' && options !== null) {
+        title = options.title || title;
+        message = options.message || '';
+        submessage = options.submessage || '';
+        type = options.type || 'warning';
+        confirmText = options.confirmText || confirmText;
+        cancelText = options.cancelText || cancelText;
+      }
+
+      // Backdrop element
+      const backdrop = document.createElement('div');
+      backdrop.className = 'np-confirm-backdrop';
+      backdrop.setAttribute('role', 'dialog');
+      backdrop.setAttribute('aria-modal', 'true');
+
+      // Modal Card
+      const card = document.createElement('div');
+      card.className = 'np-confirm-card';
+
+      // Type styling
+      let iconSvg = '';
+      let iconColorClass = '';
+      let btnConfirmClass = '';
+
+      if (type === 'danger') {
+        iconSvg = `<svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+        iconColorClass = 'bg-rose-100 dark:bg-rose-950/60 ring-8 ring-rose-50/80 dark:ring-rose-950/30';
+        btnConfirmClass = 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/30';
+      } else if (type === 'warning') {
+        iconSvg = `<svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+        iconColorClass = 'bg-amber-100 dark:bg-amber-950/60 ring-8 ring-amber-50/80 dark:ring-amber-950/30';
+        btnConfirmClass = 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/30';
+      } else {
+        iconSvg = `<svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+        iconColorClass = 'bg-blue-100 dark:bg-blue-950/60 ring-8 ring-blue-50/80 dark:ring-blue-950/30';
+        btnConfirmClass = 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/30';
+      }
+
+      card.innerHTML = `
+        <div class="flex items-start gap-3.5 sm:gap-4">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${iconColorClass} transition">
+            ${iconSvg}
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug">
+              ${title}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-normal">
+              ${message}
+            </p>
+            ${submessage ? `
+              <div class="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 text-xs text-slate-500 dark:text-slate-400 leading-normal flex items-start gap-2">
+                <span class="text-blue-500 dark:text-blue-400 font-bold shrink-0">ℹ</span>
+                <span>${submessage}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" class="np-confirm-btn-cancel px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition cursor-pointer">
+            ${cancelText}
+          </button>
+          <button type="button" class="np-confirm-btn-ok px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg active:scale-95 transition cursor-pointer ${btnConfirmClass}">
+            ${confirmText}
+          </button>
+        </div>
+      `;
+
+      backdrop.appendChild(card);
+      document.body.appendChild(backdrop);
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        backdrop.classList.add('np-confirm-visible');
+      });
+
+      let isClosed = false;
+      function cleanup(result) {
+        if (isClosed) return;
+        isClosed = true;
+        document.removeEventListener('keydown', handleKeydown);
+        backdrop.classList.remove('np-confirm-visible');
+        setTimeout(() => {
+          if (backdrop.parentNode) {
+            backdrop.parentNode.removeChild(backdrop);
+          }
+          resolve(result);
+        }, 200);
+      }
+
+      function handleKeydown(e) {
+        if (e.key === 'Escape') {
+          cleanup(false);
+        } else if (e.key === 'Enter') {
+          cleanup(true);
+        }
+      }
+      document.addEventListener('keydown', handleKeydown);
+
+      // Click outside
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) cleanup(false);
+      });
+
+      const btnCancel = card.querySelector('.np-confirm-btn-cancel');
+      const btnOk = card.querySelector('.np-confirm-btn-ok');
+
+      btnCancel.addEventListener('click', () => cleanup(false));
+      btnOk.addEventListener('click', () => cleanup(true));
+
+      // Auto-focus OK button
+      setTimeout(() => btnOk.focus(), 50);
+    });
+  }
+
   // Toast API object
   const toast = {
     show: showToast,
     auto: autoToast,
+    confirm: showConfirmModal,
     success: (msg, title) => showToast(msg, 'success', title),
     error: (msg, title) => showToast(msg, 'error', title),
     warning: (msg, title) => showToast(msg, 'warning', title),
@@ -369,7 +527,10 @@
   };
 
   window.toast = toast;
+  window.Toast = toast;
   window.showToast = showToast;
+  window.showConfirm = showConfirmModal;
+  window.confirmModal = showConfirmModal;
 
   // OVERRIDE default browser window.alert() seamlessly
   window.alert = function(msg) {

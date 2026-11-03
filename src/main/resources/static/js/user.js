@@ -405,9 +405,8 @@ async function loadUserHistory() {
 }
 
 async function confirmClearHistory() {
-  if (!confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử đọc bài không? Hành động này không thể hoàn tác.")) {
-    return;
-  }
+  const confirmed = await (window.confirmModal || window.confirm)("Bạn có chắc chắn muốn xóa toàn bộ lịch sử đọc bài không?\n(Hành động này không thể hoàn tác, danh sách đọc tin đã lưu sẽ bị xóa sạch)");
+  if (!confirmed) return;
 
   try {
     await ApiService.clearReadingHistory();
